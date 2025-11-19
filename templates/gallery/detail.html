@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{% url 'gallery:home' %}" 
+           class="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Gallery</span>
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Image Display -->
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="relative">
+                <img src="{{ image.file.url }}" 
+                     alt="{{ image.description }}" 
+                     class="w-full h-auto rounded-lg shadow-2xl">
+                
+                <!-- Image Actions Overlay -->
+                <div class="absolute top-4 right-4 flex space-x-2">
+                    <button class="like-btn bg-black/70 rounded-full p-3 text-white hover:text-red-400 transition"
+                            onclick="likeImage({{ image.id }})">
+                        <i class="{% if is_liked %}fas text-red-500{% else %}far{% endif %} fa-heart text-lg"></i>
+                    </button>
+                    <a href="{% url 'gallery:download' image.id %}" 
+                       class="bg-black/70 rounded-full p-3 text-white hover:text-green-400 transition">
+                        <i class="fas fa-download text-lg"></i>
+                    </a>
+                </div>
+                
+                <!-- House Badge -->
+                <div class="absolute top-4 left-4">
+                    <span class="px-3 py-2 bg-red-800/80 text-white text-sm rounded-full flex items-center space-x-2">
+                        <img src="{{ image.house.crest.url }}" 
+                             alt="{{ image.house.name }}"
+                             class="w-5 h-5 object-contain">
+                        <span>{{ image.house.name }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Info -->
+        <div class="space-y-6">
+            <!-- Header -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h1 class="text-3xl font-bold text-white mb-2">Memory Details</h1>
+                        
+                        {% if image.description %}
+                        <p class="text-gray-300 text-lg mb-4">{{ image.description }}</p>
+                        {% endif %}
+                        
+                        <div class="flex items-center space-x-4 text-sm text-gray-400">
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-user"></i>
+                                <span>By {{ image.uploader.name }}</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ image.timestamp|timesince }} ago</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-home"></i>
+                                <span>{{ image.house.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Like Count -->
+                    <div class="text-center">
+                        <button class="like-btn flex flex-col items-center space-y-1 {% if is_liked %}text-red-500{% else %}text-gray-400{% endif %} hover:text-red-400 transition"
+                                onclick="likeImage({{ image.id }})">
+                            <i class="{% if is_liked %}fas{% else %}far{% endif %} fa-heart text-2xl"></i>
+                            <span class="like-count font-semibold">{{ image.like_count }}</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tags -->
+                {% if image.tags %}
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in image.tags.split %}
+                    <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm border border-accent/30">
+                        #{{ tag }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Uploader Info -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <h2 class="text-xl font-bold text-accent mb-4">About the Photographer</h2>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-red-800/30 rounded-full flex items-center justify-center border-2 border-red-800/50">
+                        <i class="fas fa-user text-gray-400 text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-white text-lg">{{ image.uploader.name }}</h3>
+                        <p class="text-gray-400">{{ image.uploader.matric_number }}</p>
+                        <p class="text-gray-400 text-sm">Member of {{ image.uploader.house.name }}</p>
+                    </div>
+                    
+                    {% if image.uploader != user %}
+                    <button class="px-4 py-2 bg-red-800/30 border border-red-700/50 text-gray-300 rounded-lg hover:bg-red-700/30 transition">
+                        Follow
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <h2 class="text-xl font-bold text-accent mb-4">Actions</h2>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <a href="{% url 'gallery:download' image.id %}" 
+                       class="flex items-center justify-center space-x-2 p-4 bg-green-600/20 border border-green-600/50 text-green-400 rounded-lg hover:bg-green-600/30 transition">
+                        <i class="fas fa-download"></i>
+                        <span>Download</span>
+                    </a>
+                    
+                    <button onclick="likeImage({{ image.id }})"
+                            class="flex items-center justify-center space-x-2 p-4 {% if is_liked %}bg-red-600/20 border-red-600/50 text-red-400{% else %}bg-gray-600/20 border-gray-600/50 text-gray-400{% endif %} border rounded-lg hover:bg-red-600/30 transition">
+                        <i class="{% if is_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+                        <span>{% if is_liked %}Liked{% else %}Like{% endif %}</span>
+                    </button>
+                </div>
+                
+                <!-- Share Options -->
+                <div class="mt-4 pt-4 border-t border-red-800/30">
+                    <h3 class="text-lg font-semibold text-white mb-3">Share this memory</h3>
+                    <div class="flex space-x-3">
+                        <button class="flex-1 p-3 bg-blue-600/20 border border-blue-600/50 text-blue-400 rounded-lg hover:bg-blue-600/30 transition">
+                            <i class="fab fa-facebook"></i>
+                        </button>
+                        <button class="flex-1 p-3 bg-blue-400/20 border border-blue-400/50 text-blue-300 rounded-lg hover:bg-blue-400/30 transition">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="flex-1 p-3 bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/30 transition">
+                            <i class="fab fa-pinterest"></i>
+                        </button>
+                        <button class="flex-1 p-3 bg-gray-600/20 border border-gray-600/50 text-gray-400 rounded-lg hover:bg-gray-600/30 transition"
+                                onclick="copyLink()">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Images -->
+    {% if related_images %}
+    <div class="mt-12">
+        <h2 class="text-3xl font-bold text-accent mb-6">More from {{ image.house.name }}</h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {% for related_image in related_images %}
+            <a href="{% url 'gallery:detail' related_image.id %}" 
+               class="block aspect-square bg-gradient-to-br from-red-900/30 to-black/30 rounded-lg border border-red-800/30 hover:border-accent/50 transition overflow-hidden group">
+                <img src="{{ related_image.file.url }}" 
+                     alt="{{ related_image.description }}" 
+                     class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition"></div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Image Statistics -->
+    <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 text-center border border-red-800/50">
+            <div class="text-3xl font-bold text-accent mb-2">{{ image.like_count }}</div>
+            <div class="text-gray-400 text-sm">Likes</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 text-center border border-red-800/50">
+            <div class="text-3xl font-bold text-accent mb-2">{{ image.uploader.images_uploaded }}</div>
+            <div class="text-gray-400 text-sm">Uploads by User</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 text-center border border-red-800/50">
+            <div class="text-3xl font-bold text-accent mb-2">{{ image.house.images_uploaded }}</div>
+            <div class="text-gray-400 text-sm">Uploads by House</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 text-center border border-red-800/50">
+            <div class="text-3xl font-bold text-accent mb-2">{{ total_views }}</div>
+            <div class="text-gray-400 text-sm">Views</div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<script>
+    // Like functionality
+    async function likeImage(imageId) {
+        const likeBtn = document.querySelector('.like-btn');
+        const heartIcon = likeBtn.querySelector('i');
+        const likeCount = document.querySelector('.like-count');
+        
+        try {
+            const response = await fetch(`/gallery/${imageId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.liked) {
+                heartIcon.className = 'fas fa-heart text-red-500';
+                likeBtn.classList.add('text-red-500');
+                likeBtn.classList.remove('text-gray-400');
+            } else {
+                heartIcon.className = 'far fa-heart';
+                likeBtn.classList.remove('text-red-500');
+                likeBtn.classList.add('text-gray-400');
+            }
+            
+            likeCount.textContent = data.like_count;
+            
+            // Update action button text
+            const actionBtn = document.querySelector('button[onclick*="likeImage"] span');
+            if (actionBtn) {
+                actionBtn.textContent = data.liked ? 'Liked' : 'Like';
+            }
+            
+        } catch (error) {
+            console.error('Error liking image:', error);
+        }
+    }
+    
+    // Copy link functionality
+    function copyLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold animate-pulse';
+            toast.innerHTML = '<i class="fas fa-check mr-2"></i>Link copied to clipboard!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        });
+    }
+    
+    // Image zoom on click
+    document.addEventListener('DOMContentLoaded', function() {
+        const mainImage = document.querySelector('img[alt="{{ image.description }}"]');
+        
+        mainImage.addEventListener('click', function() {
+            this.classList.toggle('cursor-zoom-out');
+            this.style.transform = this.style.transform === 'scale(1.5)' ? 'scale(1)' : 'scale(1.5)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        // Add loading state to image
+        mainImage.addEventListener('load', function() {
+            this.classList.add('loaded');
+        });
+    });
+</script>
+
+<style>
+    /* Image zoom effect */
+    img {
+        transition: transform 0.3s ease;
+    }
+    
+    img.loaded {
+        opacity: 1;
+    }
+    
+    /* Smooth transitions */
+    .transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,33 @@
+/* Notification type card animations */
+.notification-type-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-type-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+/* Form input focus states */
+input:focus, select:focus, textarea:focus {
+    border-color: #FF6B35 !important;
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+    outline: none !important;
+}
+
+/* Custom radio button styling */
+input[type="radio"]:checked + .notification-type-card {
+    border-color: #FF6B35;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(139, 0, 0, 0.2));
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+/* Preview animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}

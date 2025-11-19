@@ -1,0 +1,13 @@
+{
+  "builds": [
+    {
+      "src": "vercel_handler.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb", "runtime": "python3.12" }
+    }
+  ],
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/staticfiles/$1" },
+    { "src": "/(.*)", "dest": "vercel_handler.py" }
+  ]
+}

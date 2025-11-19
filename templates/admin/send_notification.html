@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-accent mb-2">Send Notification</h1>
+        <p class="text-gray-400">Send push notifications to all users</p>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Notification Type -->
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <i class="fas fa-bell mr-2"></i>Notification Type
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <label class="relative flex cursor-pointer">
+                        <input type="radio" name="type" value="general" class="sr-only" checked>
+                        <div class="notification-type-card bg-black/30 border border-red-800/50 rounded-lg p-4 text-center hover:border-accent transition">
+                            <i class="fas fa-bell text-gray-400 text-xl mb-2"></i>
+                            <p class="text-sm font-medium text-white">General</p>
+                        </div>
+                    </label>
+                    
+                    <label class="relative flex cursor-pointer">
+                        <input type="radio" name="type" value="score" class="sr-only">
+                        <div class="notification-type-card bg-black/30 border border-red-800/50 rounded-lg p-4 text-center hover:border-accent transition">
+                            <i class="fas fa-trophy text-yellow-400 text-xl mb-2"></i>
+                            <p class="text-sm font-medium text-white">Score Update</p>
+                        </div>
+                    </label>
+                    
+                    <label class="relative flex cursor-pointer">
+                        <input type="radio" name="type" value="media" class="sr-only">
+                        <div class="notification-type-card bg-black/30 border border-red-800/50 rounded-lg p-4 text-center hover:border-accent transition">
+                            <i class="fas fa-images text-blue-400 text-xl mb-2"></i>
+                            <p class="text-sm font-medium text-white">Media Alert</p>
+                        </div>
+                    </label>
+                    
+                    <label class="relative flex cursor-pointer">
+                        <input type="radio" name="type" value="daily_reminder" class="sr-only">
+                        <div class="notification-type-card bg-black/30 border border-red-800/50 rounded-lg p-4 text-center hover:border-accent transition">
+                            <i class="fas fa-calendar-day text-green-400 text-xl mb-2"></i>
+                            <p class="text-sm font-medium text-white">Daily Reminder</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Notification Message -->
+            <div>
+                <label for="message" class="block text-sm font-medium text-gray-300 mb-2">
+                    <i class="fas fa-comment-alt mr-2"></i>Notification Message
+                </label>
+                <textarea 
+                    id="message" 
+                    name="message" 
+                    rows="4" 
+                    placeholder="Enter your notification message here..."
+                    class="w-full px-4 py-3 bg-black/30 border border-red-800/50 rounded-lg text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent"
+                    required
+                ></textarea>
+                <p class="text-sm text-gray-400 mt-1">This message will be sent to all users as a push notification.</p>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="bg-black/40 rounded-lg p-4 border border-red-800/30">
+                <h3 class="text-lg font-semibold text-white mb-3">Preview</h3>
+                <div class="flex items-start space-x-3 p-3 bg-black/30 rounded">
+                    <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-fire text-black text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-white">Evoke Sports Week</p>
+                        <p id="preview-message" class="text-gray-300 text-sm">Your notification will appear here...</p>
+                        <p class="text-gray-500 text-xs mt-1">Just now</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipient Info -->
+            <div class="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-users text-blue-400"></i>
+                    <div>
+                        <p class="text-white font-semibold">This notification will be sent to all registered users</p>
+                        <p class="text-blue-300 text-sm">Total users: {{ total_users }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-4 pt-6 border-t border-red-800/30">
+                <a href="{% url 'admin_dashboard:dashboard' %}" 
+                   class="px-6 py-3 border border-red-800/50 text-gray-300 rounded-lg hover:bg-red-800/20 transition flex items-center space-x-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Cancel</span>
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-accent text-black font-semibold rounded-lg hover:bg-orange-500 transition flex items-center space-x-2">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Send Notification</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Notification History -->
+    <div class="mt-12 bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-2xl font-bold text-accent mb-6">Recent Notifications</h2>
+        
+        <div class="space-y-4 max-h-96 overflow-y-auto">
+            {% for notification in recent_notifications %}
+            <div class="p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="px-2 py-1 bg-red-800/50 text-xs rounded-full capitalize">{{ notification.type }}</span>
+                            <span class="text-xs text-gray-400">{{ notification.timestamp|timesince }} ago</span>
+                        </div>
+                        <p class="text-white">{{ notification.message }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-bell-slash text-gray-600 text-4xl mb-4"></i>
+                <p class="text-gray-400">No notifications sent yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Notification type card selection */
+    .notification-type-card {
+        transition: all 0.3s ease;
+    }
+    
+    input:checked + .notification-type-card {
+        border-color: #FF6B35;
+        background: rgba(255, 107, 53, 0.1);
+    }
+    
+    /* Custom scrollbar */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: rgba(139, 0, 0, 0.1);
+        border-radius: 3px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: rgba(255, 107, 53, 0.5);
+        border-radius: 3px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageTextarea = document.getElementById('message');
+        const previewMessage = document.getElementById('preview-message');
+        const notificationTypeCards = document.querySelectorAll('.notification-type-card');
+        
+        // Update preview when message changes
+        messageTextarea.addEventListener('input', function() {
+            previewMessage.textContent = this.value || 'Your notification will appear here...';
+        });
+        
+        // Add active state to notification type cards
+        notificationTypeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove active state from all cards
+                notificationTypeCards.forEach(c => {
+                    c.classList.remove('border-accent', 'bg-accent/10');
+                    c.classList.add('border-red-800/50', 'bg-black/30');
+                });
+                
+                // Add active state to clicked card
+                this.classList.add('border-accent', 'bg-accent/10');
+                this.classList.remove('border-red-800/50', 'bg-black/30');
+            });
+        });
+        
+        // Character counter
+        const charCounter = document.createElement('div');
+        charCounter.className = 'text-right text-sm text-gray-400 mt-1';
+        charCounter.innerHTML = '<span id="char-count">0</span>/250 characters';
+        messageTextarea.parentNode.appendChild(charCounter);
+        
+        messageTextarea.addEventListener('input', function() {
+            const charCount = this.value.length;
+            document.getElementById('char-count').textContent = charCount;
+            
+            if (charCount > 250) {
+                charCounter.classList.add('text-red-400');
+            } else {
+                charCounter.classList.remove('text-red-400');
+            }
+        });
+        
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const message = messageTextarea.value.trim();
+            
+            if (!message) {
+                e.preventDefault();
+                alert('Please enter a notification message.');
+                messageTextarea.focus();
+                return;
+            }
+            
+            if (message.length > 250) {
+                e.preventDefault();
+                alert('Notification message must be 250 characters or less.');
+                messageTextarea.focus();
+                return;
+            }
+            
+            // Confirm before sending
+            if (!confirm('Are you sure you want to send this notification to all users?')) {
+                e.preventDefault();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

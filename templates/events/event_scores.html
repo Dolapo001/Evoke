@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{% url 'events:event_detail' event.id %}" 
+           class="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Event</span>
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm mb-8">
+        <div class="flex items-start justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-white mb-2">{{ event.title }} - Scores</h1>
+                <p class="text-xl text-gray-300">Detailed scoring breakdown for this event</p>
+                
+                <div class="flex items-center space-x-4 mt-4 text-sm text-gray-400">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-day"></i>
+                        <span>Day {{ event.day }}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ event.time|time:"H:i" }}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ event.venue|default:"TBA" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Event Type Badge -->
+            <div class="px-4 py-2 rounded-full {{ event.type }}-badge">
+                <i class="{% if event.type == 'major' %}fas fa-star{% elif event.type == 'treasure' %}fas fa-search{% else %}fas fa-certificate{% endif %} mr-2"></i>
+                <span class="font-semibold capitalize">{{ event.type }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scores Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 text-center">
+            <div class="text-3xl font-bold text-accent mb-2">{{ scores|length }}</div>
+            <div class="text-gray-400 text-sm">Houses Scored</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 text-center">
+            <div class="text-3xl font-bold text-accent mb-2">{{ total_points }}</div>
+            <div class="text-gray-400 text-sm">Total Points</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 text-center">
+            <div class="text-3xl font-bold text-accent mb-2">{{ average_points }}</div>
+            <div class="text-gray-400 text-sm">Average Points</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 text-center">
+            <div class="text-3xl font-bold text-accent mb-2">{{ max_points }}</div>
+            <div class="text-gray-400 text-sm">Highest Score</div>
+        </div>
+    </div>
+
+    <!-- Scores Table -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-accent">Score Breakdown</h2>
+            
+            <div class="flex space-x-4">
+                <button id="export-scores" class="px-4 py-2 border border-red-800/50 text-gray-300 rounded-lg hover:bg-red-800/20 transition">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+                <button id="refresh-scores" class="px-4 py-2 bg-accent text-black rounded-lg font-semibold hover:bg-orange-500 transition">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        {% if scores %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b-2 border-red-800/50">
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Rank</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">House</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Points</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Percentage</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Status</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Your House</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for score in scores %}
+                    <tr class="border-b border-red-800/30 hover:bg-red-800/10 transition {% if score.house == user.house %}bg-accent/10{% endif %}">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-3">
+                                {% if forloop.counter == 1 %}
+                                <div class="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/50">
+                                    <span class="text-yellow-400 font-bold">1</span>
+                                </div>
+                                {% elif forloop.counter == 2 %}
+                                <div class="w-8 h-8 bg-gray-400/20 rounded-full flex items-center justify-center border border-gray-400/50">
+                                    <span class="text-gray-300 font-bold">2</span>
+                                </div>
+                                {% elif forloop.counter == 3 %}
+                                <div class="w-8 h-8 bg-amber-700/20 rounded-full flex items-center justify-center border border-amber-700/50">
+                                    <span class="text-amber-600 font-bold">3</span>
+                                </div>
+                                {% else %}
+                                <div class="w-8 h-8 bg-red-800/20 rounded-full flex items-center justify-center border border-red-800/50">
+                                    <span class="text-gray-400 font-bold">{{ forloop.counter }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-4">
+                                <img src="{{ score.house.crest.url }}" 
+                                     alt="{{ score.house.name }}" 
+                                     class="w-12 h-12 object-contain bg-black/30 rounded-lg p-1">
+                                <div>
+                                    <h3 class="font-semibold text-white">{{ score.house.name }}</h3>
+                                    <p class="text-gray-400 text-sm">{{ score.house.motto }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="text-2xl font-bold text-accent">{{ score.points }}</span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-24 bg-red-800/30 rounded-full h-2">
+                                    <div class="h-2 rounded-full bg-accent" 
+                                         style="width: {{ score.percentage }}%"></div>
+                                </div>
+                                <span class="text-gray-400 text-sm">{{ score.percentage }}%</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if score.points == max_points %}
+                            <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-semibold">
+                                Winner
+                            </span>
+                            {% elif score.points >= average_points %}
+                            <span class="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm font-semibold">
+                                Above Avg
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-red-600/20 text-red-400 rounded-full text-sm font-semibold">
+                                Below Avg
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if score.house == user.house %}
+                            <div class="flex items-center justify-center text-accent">
+                                <i class="fas fa-home text-xl"></i>
+                            </div>
+                            {% else %}
+                            <div class="text-gray-500 text-center">-</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Score Distribution Chart -->
+        <div class="mt-12 bg-black/20 rounded-xl p-6 border border-red-800/30">
+            <h3 class="text-2xl font-bold text-accent mb-6">Score Distribution</h3>
+            
+            <div class="space-y-4">
+                {% for score in scores %}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <img src="{{ score.house.crest.url }}" 
+                             alt="{{ score.house.name }}"
+                             class="w-8 h-8 object-contain">
+                        <span class="text-white text-sm font-medium">{{ score.house.name }}</span>
+                    </div>
+                    <div class="w-48 bg-red-800/30 rounded-full h-4">
+                        <div class="h-4 rounded-full bg-accent" 
+                             style="width: {{ score.percentage }}%"></div>
+                    </div>
+                    <div class="w-16 text-right">
+                        <span class="text-accent font-bold">{{ score.points }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-trophy text-gray-600 text-5xl mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-400 mb-2">No Scores Yet</h3>
+            <p class="text-gray-500 max-w-md mx-auto">
+                Scores for this event haven't been recorded yet. Check back after the event completion.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Related Events -->
+    <div class="mt-12 bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-3xl font-bold text-accent mb-6">Other Events</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for related_event in related_events %}
+            <a href="{% url 'events:event_scores' related_event.id %}" 
+               class="block p-6 bg-black/20 rounded-xl border border-red-800/30 hover:border-accent/50 transition group">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="px-3 py-1 bg-red-800/50 rounded-full text-xs capitalize">{{ related_event.type }}</span>
+                    <span class="text-gray-400 text-sm">Day {{ related_event.day }}</span>
+                </div>
+                
+                <h3 class="font-semibold text-white mb-2 group-hover:text-accent transition">{{ related_event.title }}</h3>
+                <p class="text-gray-400 text-sm mb-4">{{ related_event.time|time:"H:i" }} • {{ related_event.venue|default:"TBA" }}</p>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-accent font-semibold">
+                        {% if related_event.score_set.exists %}
+                        {{ related_event.score_set.count }} scores
+                        {% else %}
+                        No scores
+                        {% endif %}
+                    </span>
+                    <i class="fas fa-arrow-right text-gray-400 group-hover:text-accent transition"></i>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-full text-center py-8">
+                <i class="fas fa-calendar-times text-gray-600 text-4xl mb-4"></i>
+                <p class="text-gray-400">No other events available</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Custom badge colors */
+    .major-badge { background: rgba(255, 193, 7, 0.2); color: #FFC107; border: 1px solid rgba(255, 193, 7, 0.5); }
+    .minor-badge { background: rgba(33, 150, 243, 0.2); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.5); }
+    .treasure-badge { background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.5); }
+    
+    /* Table styling */
+    table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    th, td {
+        padding: 16px 24px;
+    }
+    
+    /* Smooth transitions */
+    .transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Export scores functionality
+        document.getElementById('export-scores').addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+            button.disabled = true;
+            
+            // Simulate export process
+            setTimeout(() => {
+                // Create a simple CSV export
+                let csvContent = "House,Points,Percentage,Rank\\n";
+                
+                {% for score in scores %}
+                csvContent += "{{ score.house.name }},{{ score.points }},{{ score.percentage }}%,{{ forloop.counter }}\\n";
+                {% endfor %}
+                
+                // Create download link
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '{{ event.title|slugify }}-scores.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold animate-pulse';
+                toast.innerHTML = '<i class="fas fa-check mr-2"></i>Scores exported successfully!';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }, 1000);
+        });
+        
+        // Refresh scores
+        document.getElementById('refresh-scores').addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        });
+        
+        // Auto-refresh every 30 seconds if scores exist
+        {% if scores %}
+        setInterval(() => {
+            document.getElementById('refresh-scores').click();
+        }, 30000);
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+<!-- templates/houses/no_house.html -->
+{% extends 'base.html' %}
+
+{% block title %}No House Assigned{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="display-4 text-muted mb-4">🏠</h1>
+                    <h2 class="card-title mb-4">No House Assigned</h2>
+                    <p class="card-text mb-4">
+                        You are not currently assigned to a house. Please contact an administrator 
+                        to be assigned to a house so you can participate in house competitions.
+                    </p>
+                    
+                    {% if user.role == 'admin' %}
+                    <div class="alert alert-info">
+                        <strong>Admin Note:</strong> As an administrator, you don't need to be assigned to a house.
+                        <a href="{% url 'admin_dashboard:dashboard' %}" class="alert-link">
+                            Go to Admin Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'core:randomization' %}" class="btn btn-primary">
+                            Click Here to claim your houses
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

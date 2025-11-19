@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <!-- Header -->
+        <div class="text-center">
+            <div class="mx-auto w-20 h-20 bg-accent rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-user-plus text-black text-2xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-accent">
+                Join Evoke
+            </h2>
+            <p class="mt-2 text-gray-400">
+                Create your festival account
+            </p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-900/50 border border-red-700{% else %}bg-green-900/50 border border-green-700{% endif %}">
+                <div class="flex items-center space-x-2 {% if message.tags == 'error' %}text-red-200{% else %}text-green-200{% endif %}">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Registration Form -->
+        <form class="mt-8 space-y-6" method="POST">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-900/50 border border-red-700 rounded-lg p-4">
+                <div class="flex items-center space-x-2 text-red-200">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ form.non_field_errors }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <!-- Matric Number -->
+                <div>
+                    <label for="{{ form.matric_number.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-id-card mr-2"></i>Matric Number
+                    </label>
+                    {{ form.matric_number }}
+                    {% if form.matric_number.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.matric_number.errors }}</div>
+                    {% endif %}
+                    <p class="text-xs text-gray-400 mt-1">Your unique matriculation number</p>
+                </div>
+
+                <!-- Full Name -->
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-user mr-2"></i>Full Name
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- House Selection -->
+                <div>
+                    <label for="{{ form.house.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-home mr-2"></i>Select Your House
+                    </label>
+                    {{ form.house }}
+                    {% if form.house.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.house.errors }}</div>
+                    {% endif %}
+                    <p class="text-xs text-gray-400 mt-1">Choose your assigned house for the competition</p>
+                </div>
+
+                <!-- Password Fields -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="fas fa-lock mr-2"></i>Password
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <div class="text-red-400 text-sm mt-1">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="fas fa-lock mr-2"></i>Confirm Password
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="text-red-400 text-sm mt-1">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Password Requirements -->
+                <div class="p-4 bg-black/20 rounded-lg border border-red-800/30">
+                    <h4 class="text-sm font-semibold text-gray-300 mb-2">Password Requirements:</h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-400 mr-2 text-xs"></i>
+                            At least 8 characters
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-400 mr-2 text-xs"></i>
+                            Include letters and numbers
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-400 mr-2 text-xs"></i>
+                            Not too common or similar to personal info
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Terms Agreement -->
+            <div class="flex items-center">
+                <input id="terms_agreement" name="terms_agreement" type="checkbox" required
+                       class="h-4 w-4 text-accent focus:ring-accent border-red-800/50 rounded bg-black/30">
+                <label for="terms_agreement" class="ml-2 block text-sm text-gray-300">
+                    I agree to the 
+                    <a href="#" class="text-accent hover:text-orange-400 transition">Terms of Service</a>
+                    and 
+                    <a href="#" class="text-accent hover:text-orange-400 transition">Privacy Policy</a>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit" 
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-black bg-accent hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-user-plus text-black"></i>
+                    </span>
+                    Create Account
+                </button>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center">
+                <p class="text-gray-400">
+                    Already have an account?
+                    <a href="{% url 'core:login' %}" class="text-accent hover:text-orange-400 transition font-semibold">
+                        Sign In Here
+                    </a>
+                </p>
+            </div>
+        </form>
+
+        <!-- House Information -->
+        <div class="mt-6 p-4 bg-black/20 rounded-lg border border-red-800/30">
+            <h3 class="text-sm font-semibold text-gray-300 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2 text-accent"></i>
+                About Houses
+            </h3>
+            <div class="text-xs text-gray-400 space-y-2">
+                <p>Each house represents a team in the Sports Week competition. Choose your assigned house to join your team's scores and activities.</p>
+                <p class="text-accent font-semibold">Need help? Contact your house captain.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Custom form styling */
+    input, select {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(139, 0, 0, 0.5) !important;
+        color: white !important;
+        border-radius: 0.5rem !important;
+        padding: 0.75rem 1rem !important;
+        width: 100% !important;
+        transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus {
+        border-color: #FF6B35 !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+        outline: none !important;
+    }
+    
+    input::placeholder {
+        color: #9CA3AF !important;
+    }
+    
+    /* Checkbox styling */
+    input[type="checkbox"] {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(139, 0, 0, 0.5) !important;
+    }
+    
+    input[type="checkbox"]:checked {
+        background-color: #FF6B35 !important;
+        border-color: #FF6B35 !important;
+    }
+    
+    /* House selection styling */
+    select option {
+        background: #1a0000;
+        color: white;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password strength indicator
+        const password1 = document.getElementById('{{ form.password1.id_for_label }}');
+        const password2 = document.getElementById('{{ form.password2.id_for_label }}');
+        
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[^a-zA-Z\d]/)) strength++;
+            return strength;
+        }
+        
+        function updatePasswordStrength() {
+            const strength = checkPasswordStrength(password1.value);
+            const strengthText = ['Very Weak', 'Weak', 'Medium', 'Strong', 'Very Strong'][strength] || 'Very Weak';
+            const strengthColors = ['text-red-400', 'text-orange-400', 'text-yellow-400', 'text-green-400', 'text-green-500'];
+            
+            let strengthBar = document.getElementById('password-strength-bar');
+            if (!strengthBar) {
+                strengthBar = document.createElement('div');
+                strengthBar.id = 'password-strength-bar';
+                strengthBar.className = 'mt-2';
+                password1.parentNode.appendChild(strengthBar);
+            }
+            
+            strengthBar.innerHTML = `
+                <div class="flex items-center justify-between text-xs mb-1">
+                    <span class="text-gray-400">Password strength:</span>
+                    <span class="${strengthColors[strength]} font-semibold">${strengthText}</span>
+                </div>
+                <div class="w-full bg-red-800/30 rounded-full h-2">
+                    <div class="bg-${strength < 2 ? 'red' : strength < 3 ? 'orange' : strength < 4 ? 'yellow' : 'green'}-500 h-2 rounded-full transition-all duration-300" 
+                         style="width: ${(strength / 4) * 100}%"></div>
+                </div>
+            `;
+        }
+        
+        function checkPasswordMatch() {
+            if (password2.value) {
+                const match = password1.value === password2.value;
+                const matchElement = document.getElementById('password-match');
+                
+                if (!matchElement) {
+                    const newElement = document.createElement('div');
+                    newElement.id = 'password-match';
+                    newElement.className = 'text-xs mt-1';
+                    password2.parentNode.appendChild(newElement);
+                }
+                
+                document.getElementById('password-match').innerHTML = match ? 
+                    '<i class="fas fa-check text-green-400 mr-1"></i><span class="text-green-400">Passwords match</span>' :
+                    '<i class="fas fa-times text-red-400 mr-1"></i><span class="text-red-400">Passwords do not match</span>';
+            }
+        }
+        
+        password1.addEventListener('input', updatePasswordStrength);
+        password2.addEventListener('input', checkPasswordMatch);
+        
+        // Form submission validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const terms = document.getElementById('terms_agreement');
+            if (!terms.checked) {
+                e.preventDefault();
+                alert('Please agree to the Terms of Service and Privacy Policy.');
+                terms.focus();
+                return;
+            }
+            
+            if (password1.value !== password2.value) {
+                e.preventDefault();
+                alert('Passwords do not match. Please check your password confirmation.');
+                password2.focus();
+                return;
+            }
+            
+            // Show loading state
+            const button = this.querySelector('button[type="submit"]');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating Account...';
+            button.disabled = true;
+        });
+    });
+</script>
+{% endblock %}

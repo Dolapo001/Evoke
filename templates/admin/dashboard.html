@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-accent mb-2">Admin Dashboard</h1>
+        <p class="text-gray-400">Manage the Evoke Sports Week festival</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-red-900/50 to-black/50 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">Total Houses</p>
+                    <p class="text-3xl font-bold text-accent mt-2">{{ total_houses }}</p>
+                </div>
+                <div class="w-12 h-12 bg-red-800/30 rounded-full flex items-center justify-center">
+                    <i class="fas fa-home text-accent text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-red-900/50 to-black/50 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">Total Images</p>
+                    <p class="text-3xl font-bold text-accent mt-2">{{ total_images }}</p>
+                </div>
+                <div class="w-12 h-12 bg-red-800/30 rounded-full flex items-center justify-center">
+                    <i class="fas fa-images text-accent text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-red-900/50 to-black/50 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">Pending Approvals</p>
+                    <p class="text-3xl font-bold text-yellow-500 mt-2">{{ pending_approvals }}</p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-600/30 rounded-full flex items-center justify-center">
+                    <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-red-900/50 to-black/50 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">Quick Actions</p>
+                    <div class="mt-2 space-y-2">
+                        <a href="{% url 'admin_dashboard:score_entry' %}" 
+                           class="block w-full bg-accent text-black text-center py-2 rounded-lg hover:bg-orange-500 transition text-sm font-semibold">
+                            Add Scores
+                        </a>
+                        <a href="{% url 'admin_dashboard:image_approval' %}" 
+                           class="block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition text-sm font-semibold">
+                            Approve Images
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- House Rankings -->
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-accent">House Rankings</h2>
+                <span class="text-sm text-gray-400">Live</span>
+            </div>
+            
+            <div class="space-y-4">
+                {% for house in house_stats %}
+                <div class="flex items-center justify-between p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition">
+                    <div class="flex items-center space-x-4">
+                        <!-- Rank Badge -->
+                        <div class="flex-shrink-0">
+                            {% if forloop.counter == 1 %}
+                            <div class="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/50">
+                                <span class="text-yellow-400 font-bold text-lg">1</span>
+                            </div>
+                            {% elif forloop.counter == 2 %}
+                            <div class="w-10 h-10 bg-gray-400/20 rounded-full flex items-center justify-center border border-gray-400/50">
+                                <span class="text-gray-300 font-bold text-lg">2</span>
+                            </div>
+                            {% elif forloop.counter == 3 %}
+                            <div class="w-10 h-10 bg-amber-700/20 rounded-full flex items-center justify-center border border-amber-700/50">
+                                <span class="text-amber-600 font-bold text-lg">3</span>
+                            </div>
+                            {% else %}
+                            <div class="w-10 h-10 bg-red-800/20 rounded-full flex items-center justify-center border border-red-800/50">
+                                <span class="text-gray-400 font-bold text-lg">{{ forloop.counter }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- House Info -->
+                        <div class="flex items-center space-x-3">
+                            <img src="{{ house.crest.url }}" alt="{{ house.name }}" 
+                                 class="w-12 h-12 object-contain rounded-lg bg-black/50 p-1">
+                            <div>
+                                <h3 class="font-bold text-white">{{ house.name }}</h3>
+                                <p class="text-sm text-gray-400">{{ house.total_members }} members</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Points and Actions -->
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-accent">{{ house.total_points|default:0 }}</p>
+                            <p class="text-xs text-gray-400">points</p>
+                        </div>
+                        <a href="{% url 'admin_dashboard:score_entry' %}?house={{ house.id }}" 
+                           class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">
+                            Add Points
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-accent">Recent Activity</h2>
+                <span class="text-sm text-gray-400">Last 24h</span>
+            </div>
+            
+            <div class="space-y-4 max-h-96 overflow-y-auto">
+                {% for activity in recent_activity %}
+                <div class="p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <p class="text-white">{{ activity.message }}</p>
+                            <div class="flex items-center space-x-4 mt-2">
+                                <span class="text-xs text-gray-400">{{ activity.timestamp|timesince }} ago</span>
+                                <span class="px-2 py-1 bg-red-800/50 text-xs rounded-full capitalize">{{ activity.type }}</span>
+                            </div>
+                        </div>
+                        {% if not activity.is_read %}
+                        <div class="w-2 h-2 bg-accent rounded-full flex-shrink-0 mt-2"></div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-gray-600 text-4xl mb-4"></i>
+                    <p class="text-gray-400">No recent activity</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Footer -->
+    <div class="mt-8 bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-2xl font-bold text-accent mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'admin_dashboard:score_entry' %}" 
+               class="p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent transition group">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center group-hover:bg-green-600/30 transition">
+                        <i class="fas fa-trophy text-green-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Add Scores</h3>
+                        <p class="text-sm text-gray-400">Update event points</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_dashboard:image_approval' %}" 
+               class="p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent transition group">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center group-hover:bg-blue-600/30 transition">
+                        <i class="fas fa-images text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Approve Images</h3>
+                        <p class="text-sm text-gray-400">{{ pending_approvals }} pending</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_dashboard:event_create' %}" 
+               class="p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent transition group">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center group-hover:bg-purple-600/30 transition">
+                        <i class="fas fa-calendar-plus text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Create Event</h3>
+                        <p class="text-sm text-gray-400">Add new schedule</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome for Icons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Custom scrollbar for activity feed */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: rgba(139, 0, 0, 0.1);
+        border-radius: 3px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: rgba(255, 107, 53, 0.5);
+        border-radius: 3px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 107, 53, 0.7);
+    }
+</style>
+{% endblock %}

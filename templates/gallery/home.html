@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+        <div class="mb-6 lg:mb-0">
+            <h1 class="text-5xl font-bold text-accent mb-2">Memory Bank</h1>
+            <p class="text-xl text-gray-300">Relive the best moments of Sports Week</p>
+            <p class="text-gray-400 mt-2">{{ total_images }} memories captured so far</p>
+        </div>
+        
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'gallery:upload' %}" 
+               class="px-6 py-3 bg-accent text-black font-semibold rounded-lg hover:bg-orange-500 transition flex items-center space-x-2">
+                <i class="fas fa-camera"></i>
+                <span>Upload Photo</span>
+            </a>
+            <a href="{% url 'gallery:download_all' %}" 
+               class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                <i class="fas fa-download"></i>
+                <span>Download All Memories</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Daily Highlights Carousel -->
+    {% if daily_highlights %}
+    <div class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-accent">Daily Highlights</h2>
+            <div class="flex items-center space-x-2 text-accent">
+                <i class="fas fa-star"></i>
+                <span class="font-semibold">Featured Memories</span>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for highlight in daily_highlights %}
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl overflow-hidden border border-red-800/50 hover:border-accent/50 transition group">
+                <div class="relative overflow-hidden">
+                    <img src="{{ highlight.image.file.url }}" 
+                         alt="{{ highlight.title }}" 
+                         class="w-full h-64 object-cover group-hover:scale-105 transition duration-300">
+                    <div class="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                        Day {{ highlight.day }}
+                    </div>
+                    <div class="absolute top-4 right-4">
+                        <span class="px-2 py-1 bg-black/70 text-white text-xs rounded-full">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            Highlight
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">{{ highlight.title }}</h3>
+                    {% if highlight.description %}
+                    <p class="text-gray-300 mb-4">{{ highlight.description }}</p>
+                    {% endif %}
+                    <div class="flex items-center justify-between text-sm text-gray-400">
+                        <span>By {{ highlight.image.uploader.name }}</span>
+                        <span>{{ highlight.image.timestamp|date:"M d" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-300 font-semibold">Filter by:</span>
+                
+                <a href="{% url 'gallery:home' %}" 
+                   class="px-4 py-2 rounded-lg {% if not request.GET.house %}bg-accent text-black{% else %}bg-gray-700 text-white hover:bg-gray-600{% endif %} transition">
+                    All Houses
+                </a>
+                
+                {% for house in houses %}
+                <a href="{% url 'gallery:home' %}?house={{ house.id }}" 
+                   class="px-4 py-2 rounded-lg {% if request.GET.house == house.id|stringformat:'i' %}bg-accent text-black{% else %}bg-gray-700 text-white hover:bg-gray-600{% endif %} transition">
+                    {{ house.name }}
+                </a>
+                {% endfor %}
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" 
+                           id="search-images" 
+                           placeholder="Search memories..." 
+                           class="px-4 py-2 pl-10 bg-black/30 border border-red-800/50 rounded-lg text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent w-64">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                </div>
+                
+                <select id="sort-images" 
+                        class="px-4 py-2 bg-black/30 border border-red-800/50 rounded-lg text-white focus:border-accent focus:ring-1 focus:ring-accent">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="popular">Most Liked</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="images-container">
+        {% for image in images %}
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl overflow-hidden border border-red-800/30 hover:border-accent/50 transition group image-card"
+             data-description="{{ image.description|lower }}"
+             data-uploader="{{ image.uploader.name|lower }}"
+             data-house="{{ image.house.name|lower }}"
+             data-likes="{{ image.like_count }}"
+             data-date="{{ image.timestamp|date:'Y-m-d' }}">
+            <a href="{% url 'gallery:detail' image.id %}">
+                <div class="relative overflow-hidden">
+                    <img src="{{ image.file.url }}" 
+                         alt="{{ image.description }}" 
+                         class="w-full h-64 object-cover group-hover:scale-105 transition duration-300">
+                    
+                    <!-- Overlay on hover -->
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition"></div>
+                    
+                    <!-- Quick actions on hover -->
+                    <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition space-y-2">
+                        <button class="like-btn bg-black/70 rounded-full p-2 text-white hover:text-red-400 transition"
+                                data-image-id="{{ image.id }}"
+                                onclick="event.preventDefault(); likeImage({{ image.id }})">
+                            <i class="{% if image.is_liked %}fas text-red-500{% else %}far{% endif %} fa-heart"></i>
+                        </button>
+                        <a href="{% url 'gallery:download' image.id %}" 
+                           class="block bg-black/70 rounded-full p-2 text-white hover:text-green-400 transition">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- House badge -->
+                    <div class="absolute top-3 left-3">
+                        <span class="px-2 py-1 bg-red-800/80 text-white text-xs rounded-full">
+                            {{ image.house.name }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            
+            <div class="p-4">
+                <!-- Image info -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-red-800/30 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-400 text-sm"></i>
+                        </div>
+                        <span class="text-sm text-gray-400">{{ image.uploader.name }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ image.timestamp|timesince }} ago</span>
+                </div>
+                
+                <!-- Description -->
+                {% if image.description %}
+                <p class="text-gray-300 text-sm mb-3 line-clamp-2">{{ image.description }}</p>
+                {% endif %}
+                
+                <!-- Likes and actions -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <button class="like-btn flex items-center space-x-1 text-sm {% if image.is_liked_by %}text-red-500{% else %}text-gray-400{% endif %} hover:text-red-400 transition"
+                                data-image-id="{{ image.id }}"
+                                onclick="event.preventDefault(); likeImage({{ image.id }})">
+                            <i class="{% if image.is_liked_by %}fas{% else %}far{% endif %} fa-heart"></i>
+                            <span class="like-count">{{ image.like_count }}</span>
+                        </button>
+                        
+                        <a href="{% url 'gallery:detail' image.id %}" class="text-gray-400 hover:text-white transition">
+                            <i class="far fa-comment"></i>
+                        </a>
+                    </div>
+                    
+                    <a href="{% url 'gallery:download' image.id %}" 
+                       class="text-blue-400 hover:text-blue-300 text-sm transition">
+                        Download
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-16">
+            <div class="max-w-md mx-auto">
+                <i class="fas fa-images text-gray-600 text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-400 mb-2">No Memories Yet</h3>
+                <p class="text-gray-500 mb-6">Be the first to capture and share moments from the Sports Week!</p>
+                <a href="{% url 'gallery:upload' %}" 
+                   class="inline-flex items-center space-x-2 bg-accent text-black px-6 py-3 rounded-lg font-semibold hover:bg-orange-500 transition">
+                    <i class="fas fa-camera"></i>
+                    <span>Upload First Photo</span>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Load More -->
+    {% if images.has_next %}
+    <div class="text-center mt-12">
+        <button id="load-more" 
+                class="px-8 py-3 bg-black/30 border border-red-800/50 text-white rounded-lg hover:bg-red-800/30 transition font-semibold">
+            Load More Memories
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .image-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .image-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Custom input styling */
+    input, select {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(139, 0, 0, 0.5) !important;
+        color: white !important;
+    }
+    
+    input:focus, select:focus {
+        border-color: #FF6B35 !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+        outline: none !important;
+    }
+</style>
+
+<script>
+    // Like functionality
+    async function likeImage(imageId) {
+        const likeBtn = document.querySelector(`.like-btn[data-image-id="${imageId}"]`);
+        const heartIcon = likeBtn.querySelector('i');
+        const likeCount = likeBtn.querySelector('.like-count');
+        
+        try {
+            const response = await fetch(`/gallery/${imageId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.liked) {
+                heartIcon.className = 'fas fa-heart text-red-500';
+                likeBtn.classList.add('text-red-500');
+                likeBtn.classList.remove('text-gray-400');
+            } else {
+                heartIcon.className = 'far fa-heart';
+                likeBtn.classList.remove('text-red-500');
+                likeBtn.classList.add('text-gray-400');
+            }
+            
+            likeCount.textContent = data.like_count;
+            
+        } catch (error) {
+            console.error('Error liking image:', error);
+        }
+    }
+    
+    // Search and filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-images');
+        const sortSelect = document.getElementById('sort-images');
+        const imageCards = document.querySelectorAll('.image-card');
+        const loadMoreBtn = document.getElementById('load-more');
+        
+        function filterAndSortImages() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const sortValue = sortSelect.value;
+            
+            let visibleImages = [];
+            
+            // Filter images
+            imageCards.forEach(card => {
+                const description = card.dataset.description;
+                const uploader = card.dataset.uploader;
+                const house = card.dataset.house;
+                const likes = parseInt(card.dataset.likes);
+                const date = card.dataset.date;
+                
+                const matchesSearch = description.includes(searchTerm) || 
+                                   uploader.includes(searchTerm) || 
+                                   house.includes(searchTerm);
+                
+                if (matchesSearch) {
+                    card.style.display = 'block';
+                    visibleImages.push({
+                        element: card,
+                        likes: likes,
+                        date: date
+                    });
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Sort images
+            visibleImages.sort((a, b) => {
+                if (sortValue === 'newest') {
+                    return new Date(b.date) - new Date(a.date);
+                } else if (sortValue === 'oldest') {
+                    return new Date(a.date) - new Date(b.date);
+                } else if (sortValue === 'popular') {
+                    return b.likes - a.likes;
+                }
+                return 0;
+            });
+            
+            // Reorder in DOM
+            const container = document.getElementById('images-container');
+            visibleImages.forEach(image => {
+                container.appendChild(image.element);
+            });
+            
+            // Show empty state if no results
+            const visibleCount = visibleImages.length;
+            const emptyState = document.querySelector('.col-span-full');
+            if (emptyState) {
+                if (visibleCount === 0 && searchTerm) {
+                    emptyState.style.display = 'block';
+                    emptyState.innerHTML = `
+                        <div class="text-center py-16">
+                            <i class="fas fa-search text-gray-600 text-6xl mb-4"></i>
+                            <h3 class="text-2xl font-bold text-gray-400 mb-2">No Memories Found</h3>
+                            <p class="text-gray-500">No images match your search criteria.</p>
+                        </div>
+                    `;
+                } else if (visibleCount === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                }
+            }
+        }
+        
+        // Event listeners
+        searchInput.addEventListener('input', filterAndSortImages);
+        sortSelect.addEventListener('change', filterAndSortImages);
+        
+        // Load more functionality
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                // This would typically load more images via AJAX
+                // For now, we'll redirect to a page with more images
+                const currentUrl = new URL(window.location.href);
+                const currentPage = parseInt(currentUrl.searchParams.get('page')) || 1;
+                currentUrl.searchParams.set('page', currentPage + 1);
+                window.location.href = currentUrl.toString();
+            });
+        }
+        
+        // Initialize
+        filterAndSortImages();
+        
+        // Add loading animation to cards
+        imageCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.classList.add('animate-fade-in');
+        });
+    });
+</script>
+{% endblock %}u

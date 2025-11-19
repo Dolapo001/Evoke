@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-accent mb-4">Treasure Hunt Leaderboard</h1>
+        <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+            See who's leading the treasure hunt competition
+        </p>
+        
+        <!-- Live Status -->
+        <div class="inline-flex items-center mt-4 px-4 py-2 bg-red-800/30 rounded-full border border-red-700/50">
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+            <span class="text-green-400 text-sm font-semibold">LIVE UPDATES</span>
+        </div>
+    </div>
+
+    <!-- Top 3 Players -->
+    {% if ranked_progress|length >= 3 %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <!-- Second Place -->
+        <div class="order-2 md:order-1 transform scale-95">
+            <div class="bg-gradient-to-br from-gray-400/20 to-black/30 rounded-2xl p-6 border-2 border-gray-400/50 text-center backdrop-blur-sm">
+                <div class="text-6xl mb-4">🥈</div>
+                <div class="w-20 h-20 bg-gray-400/20 rounded-full flex items-center justify-center border-2 border-gray-400/50 mx-auto mb-4">
+                    <span class="text-gray-300 text-2xl font-bold">2</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-300 mb-2">{{ ranked_progress.1.progress.student.name }}</h3>
+                <p class="text-gray-400 text-sm mb-2">{{ ranked_progress.1.progress.student.house.name }}</p>
+                <div class="text-3xl font-bold text-gray-300 mb-2">{{ ranked_progress.1.progress.total_points }}</div>
+                <p class="text-gray-400 text-sm">points</p>
+                <p class="text-gray-400 text-xs mt-2">{{ ranked_progress.1.progress.total_scans }} scans</p>
+            </div>
+        </div>
+
+        <!-- First Place -->
+        <div class="order-1 md:order-2 transform scale-105">
+            <div class="bg-gradient-to-br from-yellow-500/20 to-black/30 rounded-2xl p-8 border-2 border-yellow-500/50 text-center backdrop-blur-sm relative">
+                <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <div class="bg-yellow-500 text-black px-4 py-1 rounded-full text-sm font-bold">
+                        🏆 LEADER
+                    </div>
+                </div>
+                <div class="text-6xl mb-4">👑</div>
+                <div class="w-24 h-24 bg-yellow-500/20 rounded-full flex items-center justify-center border-2 border-yellow-500/50 mx-auto mb-4">
+                    <span class="text-yellow-400 text-3xl font-bold">1</span>
+                </div>
+                <h3 class="text-2xl font-bold text-yellow-400 mb-2">{{ ranked_progress.0.progress.student.name }}</h3>
+                <p class="text-gray-400 text-sm mb-2">{{ ranked_progress.0.progress.student.house.name }}</p>
+                <div class="text-4xl font-bold text-yellow-400 mb-2">{{ ranked_progress.0.progress.total_points }}</div>
+                <p class="text-gray-400 text-sm">points</p>
+                <p class="text-gray-400 text-xs mt-2">{{ ranked_progress.0.progress.total_scans }} scans</p>
+            </div>
+        </div>
+
+        <!-- Third Place -->
+        <div class="order-3 md:order-3 transform scale-95">
+            <div class="bg-gradient-to-br from-amber-700/20 to-black/30 rounded-2xl p-6 border-2 border-amber-700/50 text-center backdrop-blur-sm">
+                <div class="text-6xl mb-4">🥉</div>
+                <div class="w-20 h-20 bg-amber-700/20 rounded-full flex items-center justify-center border-2 border-amber-700/50 mx-auto mb-4">
+                    <span class="text-amber-600 text-2xl font-bold">3</span>
+                </div>
+                <h3 class="text-xl font-bold text-amber-600 mb-2">{{ ranked_progress.2.progress.student.name }}</h3>
+                <p class="text-gray-400 text-sm mb-2">{{ ranked_progress.2.progress.student.house.name }}</p>
+                <div class="text-3xl font-bold text-amber-600 mb-2">{{ ranked_progress.2.progress.total_points }}</div>
+                <p class="text-gray-400 text-sm">points</p>
+                <p class="text-gray-400 text-xs mt-2">{{ ranked_progress.2.progress.total_scans }} scans</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Full Leaderboard -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-accent">All Participants</h2>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-400">{{ ranked_progress|length }} participants</span>
+                <button id="refresh-leaderboard" class="px-4 py-2 bg-accent text-black rounded-lg font-semibold hover:bg-orange-500 transition">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b-2 border-red-800/50">
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Rank</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Player</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">House</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Points</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Scans</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">Last Scan</th>
+                        <th class="text-left py-4 px-6 text-gray-300 font-semibold">You</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in ranked_progress %}
+                    <tr class="border-b border-red-800/30 hover:bg-red-800/10 transition {% if entry.is_current_user %}bg-accent/10{% endif %}">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-3">
+                                {% if entry.rank == 1 %}
+                                <div class="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/50">
+                                    <span class="text-yellow-400 font-bold">1</span>
+                                </div>
+                                {% elif entry.rank == 2 %}
+                                <div class="w-10 h-10 bg-gray-400/20 rounded-full flex items-center justify-center border border-gray-400/50">
+                                    <span class="text-gray-300 font-bold">2</span>
+                                </div>
+                                {% elif entry.rank == 3 %}
+                                <div class="w-10 h-10 bg-amber-700/20 rounded-full flex items-center justify-center border border-amber-700/50">
+                                    <span class="text-amber-600 font-bold">3</span>
+                                </div>
+                                {% else %}
+                                <div class="w-10 h-10 bg-red-800/20 rounded-full flex items-center justify-center border border-red-800/50">
+                                    <span class="text-gray-400 font-bold">{{ entry.rank }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-red-800/30 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">{{ entry.progress.student.name }}</h3>
+                                    <p class="text-gray-400 text-sm">{{ entry.progress.student.matric_number }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center space-x-2">
+                                <img src="{{ entry.progress.student.house.crest.url }}" 
+                                     alt="{{ entry.progress.student.house.name }}"
+                                     class="w-8 h-8 object-contain">
+                                <span class="text-gray-300">{{ entry.progress.student.house.name }}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="text-2xl font-bold text-accent">{{ entry.progress.total_points }}</span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="bg-red-800/50 text-white px-3 py-1 rounded-full text-sm">
+                                {{ entry.progress.total_scans }} scans
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if entry.progress.last_scan %}
+                            <span class="text-gray-300">{{ entry.progress.last_scan|timesince }} ago</span>
+                            {% else %}
+                            <span class="text-gray-500">No scans</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            {% if entry.is_current_user %}
+                            <div class="flex items-center justify-center text-accent">
+                                <i class="fas fa-user text-xl"></i>
+                            </div>
+                            {% else %}
+                            <div class="text-gray-500 text-center">-</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-12 text-center">
+                            <i class="fas fa-treasure-chest text-gray-600 text-5xl mb-4"></i>
+                            <h3 class="text-2xl font-bold text-gray-400 mb-2">No Participants Yet</h3>
+                            <p class="text-gray-500">Be the first to join the treasure hunt!</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- House Rankings -->
+    <div class="mt-12 bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-3xl font-bold text-accent mb-6">House Rankings</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for house in house_rankings %}
+            <div class="bg-black/20 rounded-xl p-6 border border-red-800/30 hover:border-accent/50 transition">
+                <div class="text-center mb-4">
+                    <img src="{{ house.crest.url }}" 
+                         alt="{{ house.name }}"
+                         class="w-16 h-16 object-contain mx-auto mb-3 bg-black/30 rounded-lg p-2">
+                    <h3 class="font-semibold text-white">{{ house.name }}</h3>
+                </div>
+                
+                <div class="space-y-2 text-center">
+                    <div class="text-3xl font-bold text-accent">{{ house.total_points }}</div>
+                    <p class="text-gray-400 text-sm">Total Points</p>
+                    <p class="text-gray-400 text-xs">{{ house.total_scans }} scans</p>
+                    <p class="text-gray-400 text-xs">{{ house.participants }} participants</p>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <span class="px-3 py-1 bg-red-800/50 text-white rounded-full text-sm">
+                        Rank #{{ house.rank }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const refreshButton = document.getElementById('refresh-leaderboard');
+        
+        refreshButton.addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        });
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            refreshButton.click();
+        }, 30000);
+        
+        // Add highlight animation to current user's row
+        const currentUserRow = document.querySelector('.bg-accent\\/10');
+        if (currentUserRow) {
+            setInterval(() => {
+                currentUserRow.classList.toggle('bg-accent/20');
+            }, 2000);
+        }
+    });
+</script>
+
+<style>
+    /* Smooth transitions */
+    .transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Table styling */
+    table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    th, td {
+        padding: 16px 24px;
+    }
+    
+    /* Scale animation for top 3 */
+    .transform {
+        transition: transform 0.3s ease;
+    }
+    
+    .scale-105 {
+        transform: scale(1.05);
+    }
+    
+    .scale-95 {
+        transform: scale(0.95);
+    }
+</style>
+{% endblock %}

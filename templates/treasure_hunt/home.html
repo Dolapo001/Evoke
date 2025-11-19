@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-accent rounded-full mb-4">
+            <i class="fas fa-treasure-chest text-black text-3xl"></i>
+        </div>
+        <h1 class="text-5xl font-bold text-accent mb-4">Treasure Hunt</h1>
+        <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+            Explore the campus, scan QR codes, and earn points for your house!
+        </p>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <!-- Your Progress -->
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-accent mb-6">Your Progress</h2>
+            
+            <div class="space-y-6">
+                <!-- Stats -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-accent">{{ progress.total_scans }}</div>
+                        <div class="text-gray-400 text-sm">Codes Scanned</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-accent">{{ progress.total_points }}</div>
+                        <div class="text-gray-400 text-sm">Total Points</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div>
+                    <div class="flex justify-between text-sm text-gray-400 mb-2">
+                        <span>Progress</span>
+                        <span>{{ progress_percentage }}%</span>
+                    </div>
+                    <div class="w-full bg-red-800/30 rounded-full h-4">
+                        <div class="h-4 rounded-full bg-accent transition-all duration-500" 
+                             style="width: {{ progress_percentage }}%"></div>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-2 text-center">
+                        {{ progress.total_scans }} of {{ total_qr_codes }} codes found
+                    </p>
+                </div>
+
+                <!-- Last Scan -->
+                {% if progress.last_scan %}
+                <div class="text-center">
+                    <p class="text-gray-400 text-sm">Last Scan</p>
+                    <p class="text-accent font-semibold">{{ progress.last_scan|timesince }} ago</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- How to Play -->
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-accent mb-6">How to Play</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-green-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span class="text-green-400 font-bold text-sm">1</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Find QR Codes</h3>
+                        <p class="text-gray-400 text-sm">Look for QR codes around campus locations</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span class="text-blue-400 font-bold text-sm">2</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Scan & Earn</h3>
+                        <p class="text-gray-400 text-sm">Scan the code to earn points for your house</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span class="text-purple-400 font-bold text-sm">3</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Get Clues</h3>
+                        <p class="text-gray-400 text-sm">Each scan reveals a clue to the next location</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-yellow-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span class="text-yellow-400 font-bold text-sm">4</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Climb Leaderboard</h3>
+                        <p class="text-gray-400 text-sm">Compete with others and track your progress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+            <h2 class="text-2xl font-bold text-accent mb-6">Quick Actions</h2>
+            
+            <div class="space-y-4">
+                <a href="{% url 'treasure_hunt:scan' %}" 
+                   class="block w-full bg-accent text-black text-center py-4 rounded-lg font-bold hover:bg-orange-500 transition text-lg">
+                    <i class="fas fa-camera mr-2"></i>Scan QR Code
+                </a>
+                
+                <a href="{% url 'treasure_hunt:leaderboard' %}" 
+                   class="block w-full border border-accent text-accent text-center py-4 rounded-lg font-bold hover:bg-accent hover:text-black transition text-lg">
+                    <i class="fas fa-trophy mr-2"></i>View Leaderboard
+                </a>
+                
+                <a href="{% url 'events:leaderboard' %}" 
+                   class="block w-full border border-red-800/50 text-gray-300 text-center py-4 rounded-lg font-bold hover:bg-red-800/20 transition">
+                    <i class="fas fa-home mr-2"></i>House Leaderboard
+                </a>
+            </div>
+
+            <!-- Current Rank -->
+            <div class="mt-6 p-4 bg-black/20 rounded-lg border border-red-800/30 text-center">
+                <p class="text-gray-400 text-sm">Your Current Rank</p>
+                <p class="text-2xl font-bold text-accent">#{{ user_rank }}</p>
+                <p class="text-gray-400 text-sm">out of {{ total_participants }} players</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan History -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-accent">Scan History</h2>
+            <span class="text-gray-400">{{ scans.count }} scans</span>
+        </div>
+
+        {% if scans %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for scan in scans %}
+            <div class="bg-black/20 rounded-xl p-6 border border-red-800/30 hover:border-accent/50 transition group">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-600/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-green-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white">{{ scan.qr_code.location_name }}</h3>
+                            <p class="text-gray-400 text-sm">+{{ scan.qr_code.points }} points</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-accent font-bold text-lg">+{{ scan.qr_code.points }}</span>
+                        <p class="text-gray-400 text-xs">{{ scan.scanned_at|timesince }} ago</p>
+                    </div>
+                </div>
+                
+                <p class="text-gray-300 text-sm mb-4">{{ scan.qr_code.clue }}</p>
+                
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                    <span>Code: {{ scan.qr_code.code|slice:":8" }}...</span>
+                    <span>{{ scan.scanned_at|date:"M d, H:i" }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-qrcode text-gray-600 text-5xl mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-400 mb-2">No Scans Yet</h3>
+            <p class="text-gray-500 mb-6">Start your treasure hunt by scanning your first QR code!</p>
+            <a href="{% url 'treasure_hunt:scan' %}" 
+               class="inline-flex items-center space-x-2 bg-accent text-black px-6 py-3 rounded-lg font-bold hover:bg-orange-500 transition">
+                <i class="fas fa-camera"></i>
+                <span>Scan First Code</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Treasure Map (Conceptual) -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-3xl font-bold text-accent mb-6">Treasure Map</h2>
+        
+        <div class="bg-black/20 rounded-xl p-6 border border-red-800/30">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                {% for location in treasure_locations %}
+                <div class="p-4 rounded-lg border-2 {% if location.scanned %}border-green-500 bg-green-500/10{% else %}border-red-800/50 bg-red-800/10{% endif %}">
+                    <div class="text-2xl mb-2">
+                        {% if location.scanned %}
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        {% else %}
+                        <i class="fas fa-map-marker-alt text-red-400"></i>
+                        {% endif %}
+                    </div>
+                    <h3 class="font-semibold text-white text-sm mb-1">{{ location.name }}</h3>
+                    <p class="text-gray-400 text-xs">{{ location.points }} points</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-6">
+                <p class="text-gray-400 text-sm">
+                    {% if progress.total_scans == total_qr_codes %}
+                        🎉 Congratulations! You've found all treasures!
+                    {% else %}
+                        {{ remaining_treasures }} treasures remaining to discover
+                    {% endif %}
+                </p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    .transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .group:hover {
+        transform: translateY(-2px);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add pulse animation to scan button
+        const scanButton = document.querySelector('a[href*="scan"]');
+        if (scanButton) {
+            setInterval(() => {
+                scanButton.classList.toggle('animate-pulse');
+            }, 2000);
+        }
+        
+        // Auto-refresh progress every 30 seconds
+        setInterval(() => {
+            const refreshIndicator = document.createElement('div');
+            refreshIndicator.className = 'fixed top-4 right-4 bg-accent text-black px-4 py-2 rounded-lg font-semibold animate-pulse';
+            refreshIndicator.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Updating Progress...';
+            document.body.appendChild(refreshIndicator);
+            
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }, 30000);
+    });
+</script>
+{% endblock %}

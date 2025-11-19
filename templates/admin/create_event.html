@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-accent mb-2">Create New Event</h1>
+        <p class="text-gray-400">Add a new event to the Sports Week schedule</p>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-900/50 border border-red-700 rounded-lg p-4">
+                <div class="flex items-center space-x-2 text-red-200">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ form.non_field_errors }}</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Event Title -->
+            <div>
+                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    <i class="fas fa-heading mr-2"></i>Event Title
+                </label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <div class="text-red-400 text-sm mt-1">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Event Description -->
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                    <i class="fas fa-align-left mr-2"></i>Event Description
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <div class="text-red-400 text-sm mt-1">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Two Column Layout for Date and Time -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Date Selection -->
+                <div>
+                    <label for="{{ form.day.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-calendar-day mr-2"></i>Date
+                    </label>
+                    <div class="relative">
+                        <input type="date" id="{{ form.day.id_for_label }}" name="{{ form.day.name }}" 
+                               value="{{ form.day.value|default:''|date:'Y-m-d' }}"
+                               class="w-full px-4 py-3 bg-black/30 border border-red-800/50 rounded-lg text-white focus:border-accent focus:ring-2 focus:ring-accent/20 transition cursor-pointer">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                    </div>
+                    {% if form.day.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.day.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Time Selection -->
+                <div>
+                    <label for="{{ form.time.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-clock mr-2"></i>Time
+                    </label>
+                    <div class="relative">
+                        <input type="time" id="{{ form.time.id_for_label }}" name="{{ form.time.name }}" 
+                               value="{{ form.time.value|default:'' }}"
+                               class="w-full px-4 py-3 bg-black/30 border border-red-800/50 rounded-lg text-white focus:border-accent focus:ring-2 focus:ring-accent/20 transition cursor-pointer"
+                               min="06:00" max="23:00" step="900">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    {% if form.time.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.time.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Two Column Layout for Type and Venue -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Event Type -->
+                <div>
+                    <label for="{{ form.type.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-tag mr-2"></i>Event Type
+                    </label>
+                    <div class="relative">
+                        {{ form.type }}
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    {% if form.type.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.type.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Venue -->
+                <div>
+                    <label for="{{ form.venue.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-map-marker-alt mr-2"></i>Venue
+                    </label>
+                    {{ form.venue }}
+                    {% if form.venue.errors %}
+                    <div class="text-red-400 text-sm mt-1">{{ form.venue.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-4 pt-6 border-t border-red-800/30">
+                <a href="{% url 'admin_dashboard:dashboard' %}" 
+                   class="px-6 py-3 border border-red-800/50 text-gray-300 rounded-lg hover:bg-red-800/20 transition flex items-center space-x-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Cancel</span>
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-accent text-black font-semibold rounded-lg hover:bg-orange-500 transition flex items-center space-x-2">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create Event</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Upcoming Events Preview -->
+    <div class="mt-12 bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-2xl font-bold text-accent mb-6">Upcoming Events</h2>
+        
+        <div class="space-y-4">
+            {% for event in upcoming_events %}
+            <div class="flex items-center justify-between p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-red-800/30 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-calendar text-accent"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">{{ event.title }}</h3>
+                        <p class="text-sm text-gray-400">
+                            {{ event.day|date:"M d, Y" }} • {{ event.time|time:"H:i" }} • {{ event.venue }}
+                        </p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 bg-red-800/50 text-xs rounded-full capitalize">{{ event.type }}</span>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-calendar-plus text-gray-600 text-4xl mb-4"></i>
+                <p class="text-gray-400">No upcoming events scheduled</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Custom form styling */
+    input, select, textarea {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(139, 0, 0, 0.5) !important;
+        color: white !important;
+        border-radius: 0.5rem !important;
+        padding: 0.75rem 1rem !important;
+        width: 100% !important;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        border-color: #FF6B35 !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+        outline: none !important;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Custom date input styling */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+        padding: 4px;
+        margin-right: -8px;
+    }
+
+    /* Custom time input styling */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+        padding: 4px;
+        margin-right: -8px;
+    }
+
+    /* Custom dropdown arrow for select */
+    select {
+        appearance: none;
+        background-image: none;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('{{ form.day.id_for_label }}');
+        const timeInput = document.getElementById('{{ form.time.id_for_label }}');
+        
+        // Set default date to today if empty
+        if (dateInput && !dateInput.value) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            dateInput.value = `${year}-${month}-${day}`;
+        }
+
+        // Set default time to next hour if empty
+        if (timeInput && !timeInput.value) {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            now.setMinutes(0);
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            timeInput.value = `${hours}:${minutes}`;
+        }
+
+        // Add visual feedback for form fields
+        const formFields = document.querySelectorAll('input, select, textarea');
+        formFields.forEach(field => {
+            // Initialize border color based on current value
+            if (field.value) {
+                field.classList.add('border-accent/70');
+            }
+
+            field.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('border-accent/70');
+                } else {
+                    this.classList.remove('border-accent/70');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

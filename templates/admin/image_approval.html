@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-accent mb-2">Image Approval</h1>
+            <p class="text-gray-400">{{ pending_images.count }} images awaiting approval</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="px-4 py-2 bg-yellow-600/20 text-yellow-400 rounded-full border border-yellow-600/50">
+                <i class="fas fa-clock mr-2"></i>Pending Review
+            </span>
+        </div>
+    </div>
+
+    {% if pending_images %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for image in pending_images %}
+        <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl border border-red-800/50 backdrop-blur-sm overflow-hidden hover:border-accent/50 transition">
+            <!-- Image -->
+            <div class="relative aspect-w-16 aspect-h-9 bg-black">
+                <img src="{{ image.file.url }}" 
+                     alt="{{ image.description }}" 
+                     class="w-full h-64 object-cover">
+                <div class="absolute top-4 left-4 bg-yellow-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    Pending
+                </div>
+            </div>
+
+            <!-- Image Details -->
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="{{ image.uploader.house.crest.url }}" 
+                             alt="{{ image.uploader.house.name }}"
+                             class="w-8 h-8 object-contain rounded bg-black/50 p-1">
+                        <div>
+                            <p class="text-sm font-semibold text-white">{{ image.uploader.name }}</p>
+                            <p class="text-xs text-gray-400">{{ image.uploader.house.name }}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ image.timestamp|timesince }} ago</span>
+                </div>
+
+                {% if image.description %}
+                <p class="text-gray-300 text-sm mb-4 line-clamp-2">{{ image.description }}</p>
+                {% endif %}
+
+                <!-- Approval Actions -->
+                <div class="flex space-x-3">
+                    <form method="post" action="{% url 'admin_dashboard:approve_image' image.pk %}" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold transition flex items-center justify-center space-x-2">
+                            <i class="fas fa-check"></i>
+                            <span>Approve</span>
+                        </button>
+                    </form>
+                    
+                    <form method="post" action="{% url 'admin_dashboard:reject_image' image.pk %}" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold transition flex items-center justify-center space-x-2"
+                                onclick="return confirm('Are you sure you want to reject this image? This action cannot be undone.')">
+                            <i class="fas fa-times"></i>
+                            <span>Reject</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    {% else %}
+    <div class="text-center py-16">
+        <div class="max-w-md mx-auto">
+            <div class="w-24 h-24 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-check-circle text-green-400 text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2">All Caught Up!</h3>
+            <p class="text-gray-400 mb-6">There are no images waiting for approval. Check back later for new uploads.</p>
+            <a href="{% url 'admin_dashboard:dashboard' %}" 
+               class="inline-flex items-center space-x-2 bg-accent text-black px-6 py-3 rounded-lg font-semibold hover:bg-orange-500 transition">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bulk Actions -->
+    {% if pending_images %}
+    <div class="mt-8 bg-gradient-to-br from-red-900/30 to-black/30 rounded-xl p-6 border border-red-800/50 backdrop-blur-sm">
+        <h3 class="text-lg font-semibold text-white mb-4">Bulk Actions</h3>
+        <div class="flex space-x-4">
+            <button class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition flex items-center space-x-2">
+                <i class="fas fa-check-double"></i>
+                <span>Approve All</span>
+            </button>
+            <button class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition flex items-center space-x-2">
+                <i class="fas fa-trash"></i>
+                <span>Reject All</span>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Hover effects */
+    .hover\:border-accent\/50:hover {
+        border-color: rgba(255, 107, 53, 0.5);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

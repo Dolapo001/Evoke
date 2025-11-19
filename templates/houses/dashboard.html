@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- House Header -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm mb-8">
+        <div class="flex flex-col lg:flex-row items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8">
+            <!-- House Crest -->
+            <div class="flex-shrink-0">
+                <div class="relative">
+                    {% if house.crest %}
+                    <img src="{{ house.crest.url }}" 
+                         alt="{{ house.name }} Crest" 
+                         class="w-48 h-48 object-contain bg-black/30 rounded-2xl p-4 border-2 border-accent/50 shadow-lg">
+                    {% else %}
+                    <div class="w-48 h-48 bg-black/20 rounded-2xl p-4 border-2 border-accent/50 shadow-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-4xl text-gray-400"></i>
+                    </div>
+                    {% endif %}
+                    <div class="absolute -top-2 -right-2 w-12 h-12 bg-accent rounded-full flex items-center justify-center">
+                        <i class="fas fa-home text-black text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- House Info -->
+            <div class="flex-1 text-center lg:text-left">
+                <h1 class="text-5xl font-bold text-accent mb-4">{{ house.name }}</h1>
+                <p class="text-xl italic text-gray-300 mb-6">"{{ house.motto }}"</p>
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-black/30 rounded-lg p-4 text-center border border-red-800/30">
+                        <div class="text-2xl font-bold text-accent">{{ total_points }}</div>
+                        <div class="text-gray-400 text-sm">Total Points</div>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 text-center border border-red-800/30">
+                        <div class="text-2xl font-bold text-accent">{{ members_count }}</div>
+                        <div class="text-gray-400 text-sm">Members</div>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 text-center border border-red-800/30">
+                        <div class="text-2xl font-bold text-accent">{{ event_wins }}</div>
+                        <div class="text-gray-400 text-sm">Event Wins</div>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 text-center border border-red-800/30">
+                        <div class="text-2xl font-bold text-accent">{{ house_rank }}</div>
+                        <div class="text-gray-400 text-sm">Rank</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+                    <a href="{% url 'houses:detail' house.id %}" 
+                       class="px-6 py-3 border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-black transition flex items-center space-x-2">
+                        <i class="fas fa-eye"></i>
+                        <span>View Public Profile</span>
+                    </a>
+                    
+                    <a href="{% url 'events:leaderboard' %}" 
+                       class="px-6 py-3 border border-red-800/50 text-gray-300 rounded-lg hover:bg-red-800/20 transition flex items-center space-x-2">
+                        <i class="fas fa-trophy"></i>
+                        <span>View Leaderboard</span>
+                    </a>
+
+                    {% if house.whatsapp_link %}
+                    <!-- Open Modal Button -->
+                    <button id="open-whatsapp-modal" type="button"
+                        class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Join WhatsApp Group</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Recent Activity -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <h2 class="text-2xl font-bold text-accent mb-6">Recent Activity</h2>
+                
+                <div class="space-y-4">
+                    {% for activity in recent_activity %}
+                    <div class="flex items-start space-x-4 p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition">
+                        <div class="w-10 h-10 bg-{{ activity.color }}-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="{{ activity.icon }} text-{{ activity.color }}-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-white">{{ activity.message }}</p>
+                            <p class="text-gray-400 text-sm mt-1">{{ activity.timestamp|timesince }} ago</p>
+                        </div>
+                        <span class="px-2 py-1 bg-red-800/50 text-xs rounded-full capitalize">{{ activity.type }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-inbox text-gray-600 text-4xl mb-4"></i>
+                        <p class="text-gray-400">No recent activity</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Scores -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <h2 class="text-2xl font-bold text-accent mb-6">Recent Scores</h2>
+                
+                {% if recent_scores %}
+                <div class="space-y-3">
+                    {% for score in recent_scores %}
+                    <div class="flex items-center justify-between p-4 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-red-800/30 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-trophy text-accent"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white">{{ score.event.title }}</h3>
+                                <p class="text-gray-400 text-sm">Day {{ score.event.day }} • {{ score.event.time|time:"H:i" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-bold text-accent">+{{ score.points }}</span>
+                            <p class="text-gray-400 text-sm">{{ score.created_at|timesince }} ago</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-6 pt-4 border-t border-red-800/30">
+                    <a href="{% url 'houses:scores' house.id %}" 
+                       class="text-accent hover:text-orange-400 transition font-semibold">
+                        View all scores →
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <i class="fas fa-trophy text-gray-600 text-4xl mb-4"></i>
+                    <p class="text-gray-400">No scores yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- House Members -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-accent">House Members</h3>
+                    <span class="text-gray-400 text-sm">{{ members_count }} total</span>
+                </div>
+                
+                <div class="space-y-3 max-h-80 overflow-y-auto">
+                    {% for member in members %}
+                    <div class="flex items-center justify-between p-3 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition {% if member == user %}border-accent/50 bg-accent/10{% endif %}">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-red-800/30 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">{{ member.name }}</h4>
+                            </div>
+                        </div>
+                        {% if member.role == 'admin' %}
+                        <span class="px-2 py-1 bg-red-600 text-white text-xs rounded-full">Admin</span>
+                        {% elif member == user %}
+                        <span class="px-2 py-1 bg-accent text-black text-xs rounded-full">You</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-4 pt-4 border-t border-red-800/30">
+                    <a href="{% url 'houses:members' house.id %}" 
+                       class="text-accent hover:text-orange-400 transition font-semibold text-sm">
+                        View all members →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <h3 class="text-xl font-bold text-accent mb-4">Quick Actions</h3>
+                
+                <div class="space-y-3">
+                    <a href="{% url 'gallery:upload' %}" 
+                       class="flex items-center space-x-3 p-3 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition group">
+                        <div class="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center group-hover:bg-blue-600/30 transition">
+                            <i class="fas fa-camera text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white">Upload Photos</h4>
+                            <p class="text-gray-400 text-xs">Share memories with your house</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'treasure_hunt:home' %}" 
+                       class="flex items-center space-x-3 p-3 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition group">
+                        <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center group-hover:bg-green-600/30 transition">
+                            <i class="fas fa-search text-green-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white">Treasure Hunt</h4>
+                            <p class="text-gray-400 text-xs">Earn points for your house</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'events:schedule' %}" 
+                       class="flex items-center space-x-3 p-3 bg-black/20 rounded-lg border border-red-800/30 hover:border-accent/50 transition group">
+                        <div class="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center group-hover:bg-purple-600/30 transition">
+                            <i class="fas fa-calendar text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white">Event Schedule</h4>
+                            <p class="text-gray-400 text-xs">View upcoming events</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- House Ranking -->
+            <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+                <h3 class="text-xl font-bold text-accent mb-4">House Ranking</h3>
+                
+                <div class="text-center mb-4">
+                    {% if house_rank == 1 %}
+                    <div class="text-6xl mb-2">👑</div>
+                    <div class="text-3xl font-bold text-yellow-400">#{{ house_rank }}</div>
+                    <p class="text-yellow-400 font-semibold">Leading the Competition!</p>
+                    {% elif house_rank == 2 %}
+                    <div class="text-6xl mb-2">🥈</div>
+                    <div class="text-3xl font-bold text-gray-300">#{{ house_rank }}</div>
+                    <p class="text-gray-300 font-semibold">Close Second!</p>
+                    {% elif house_rank == 3 %}
+                    <div class="text-6xl mb-2">🥉</div>
+                    <div class="text-3xl font-bold text-amber-600">#{{ house_rank }}</div>
+                    <p class="text-amber-600 font-semibold">Top Three!</p>
+                    {% else %}
+                    <div class="text-6xl mb-2">🏆</div>
+                    <div class="text-3xl font-bold text-accent">#{{ house_rank }}</div>
+                    <p class="text-gray-400 font-semibold">Keep pushing!</p>
+                    {% endif %}
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Total Points</span>
+                        <span class="text-white font-semibold">{{ total_points }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Points to Next</span>
+                        <span class="text-white font-semibold">{{ points_to_next }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if house.whatsapp_link %}
+<!-- WhatsApp Modal -->
+<div id="whatsapp-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-4 py-8">
+  <div class="max-w-3xl w-full bg-gradient-to-br from-red-900/20 to-black/70 rounded-2xl p-6 border border-red-800/50 backdrop-blur-sm">
+    <div class="flex justify-between items-start mb-4">
+      <h3 class="text-xl font-bold text-accent flex items-center space-x-3">
+        <i class="fab fa-whatsapp text-green-400 text-2xl"></i>
+        <span>Join {{ house.name }}'s WhatsApp Group</span>
+      </h3>
+      <button id="close-whatsapp-modal" class="text-gray-400 hover:text-white text-2xl leading-none" aria-label="Close modal">
+        &times;
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Left: QR and actions -->
+      <div class="flex flex-col items-center justify-center space-y-4 p-4 bg-black/20 rounded-lg border border-red-800/30">
+        <p class="text-gray-300 text-sm text-center">Scan this QR code with your phone to open the invite on mobile:</p>
+        <img
+          alt="QR code for joining WhatsApp group"
+          src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ house.whatsapp_link|urlencode }}"
+          class="w-44 h-44 bg-white/5 p-2 rounded-lg"
+        />
+        <div class="flex space-x-2">
+          <a id="open-whatsapp-link-mobile" href="{{ house.whatsapp_link }}" target="_blank" rel="noopener noreferrer"
+             class="px-4 py-2 bg-green-600 text-black font-semibold rounded-lg hover:bg-green-700 transition">
+            Open in WhatsApp
+          </a>
+          <button id="copy-whatsapp-link" class="px-4 py-2 border border-gray-600 text-gray-200 rounded-lg hover:bg-gray-800 transition">
+            Copy Link
+          </button>
+        </div>
+        <p class="text-gray-400 text-xs text-center break-all">{{ house.whatsapp_link }}</p>
+      </div>
+
+      <!-- Right: iframe attempt (may be blocked) + fallback text -->
+      <div class="p-4 bg-black/20 rounded-lg border border-red-800/30">
+        <p class="text-gray-300 text-sm mb-2">Embedded preview (WhatsApp may block embedding — if blocked, use the link or QR):</p>
+        <div id="whatsapp-iframe-wrapper" class="w-full h-48 bg-black/10 rounded-md overflow-hidden border border-red-800/20">
+          <!-- We attempt an iframe, but WhatsApp often sends X-Frame-Options: DENY -->
+          <iframe id="whatsapp-iframe" src="{{ house.whatsapp_link }}" class="w-full h-full border-0" sandbox></iframe>
+        </div>
+
+        <div id="iframe-blocked-fallback" class="hidden mt-3 text-sm text-gray-400">
+          Embedding is blocked by WhatsApp — click <a id="open-whatsapp-link-fallback" href="{{ house.whatsapp_link }}" target="_blank" rel="noopener noreferrer" class="text-accent underline">Open in WhatsApp</a> to join, or scan the QR code.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endif %}
+
+<!-- Font Awesome (single include) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Custom scrollbar */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: rgba(139, 0, 0, 0.1);
+        border-radius: 3px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: rgba(255, 107, 53, 0.5);
+        border-radius: 3px;
+    }
+    
+    /* Hover effects */
+    .hover\:border-accent\/50:hover {
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-refresh dashboard every 30 seconds (fade & reload)
+        setInterval(() => {
+            const refreshIndicator = document.createElement('div');
+            refreshIndicator.className = 'fixed top-4 right-4 bg-accent text-black px-4 py-2 rounded-lg font-semibold animate-pulse z-50';
+            refreshIndicator.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Updating Dashboard...';
+            document.body.appendChild(refreshIndicator);
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1200);
+        }, 30000);
+        
+        // Click effects for quick action cards
+        const actionCards = document.querySelectorAll('a.flex.items-center.space-x-3');
+        actionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+
+        // WhatsApp modal logic
+        const openBtn = document.getElementById('open-whatsapp-modal');
+        const closeBtn = document.getElementById('close-whatsapp-modal');
+        const modal = document.getElementById('whatsapp-modal');
+        const copyBtn = document.getElementById('copy-whatsapp-link');
+        const iframe = document.getElementById('whatsapp-iframe');
+        const fallback = document.getElementById('iframe-blocked-fallback');
+
+        // escapejs-safe link
+        const waLink = "{{ house.whatsapp_link|escapejs }}";
+
+        if (openBtn && modal) {
+          openBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // detect iframe embedding blocked
+            setTimeout(() => {
+              try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                if (doc) {
+                  fallback?.classList.add('hidden');
+                }
+              } catch (err) {
+                fallback?.classList.remove('hidden');
+              }
+            }, 700);
+          });
+        }
+
+        if (closeBtn && modal) {
+          closeBtn.addEventListener('click', () => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          });
+        }
+
+        if (modal) {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              modal.classList.remove('flex');
+              modal.classList.add('hidden');
+            }
+          });
+        }
+
+        if (copyBtn) {
+          copyBtn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(waLink);
+              const prev = copyBtn.innerHTML;
+              copyBtn.innerHTML = 'Copied!';
+              setTimeout(() => copyBtn.innerHTML = prev, 1500);
+            } catch (err) {
+              copyBtn.innerHTML = 'Failed';
+              setTimeout(() => copyBtn.innerHTML = 'Copy Link', 1500);
+            }
+          });
+        }
+    });
+</script>
+{% endblock %}

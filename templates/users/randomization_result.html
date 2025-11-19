@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl w-full">
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm text-center">
+      <!-- Success Icon -->
+      <div class="mx-auto w-24 h-24 {% if existing %}bg-blue-500{% else %}bg-green-500{% endif %} rounded-full flex items-center justify-center mb-6">
+        <i class="fas {% if existing %}fa-search{% else %}fa-check{% endif %} text-white text-3xl"></i>
+      </div>
+
+      {% if existing %}
+      <h1 class="text-3xl font-bold text-accent mb-4">House Assignment Found!</h1>
+      <p class="text-gray-300 mb-6">You've already been assigned to a house. Here are your details:</p>
+      {% else %}
+      <h1 class="text-3xl font-bold text-accent mb-4">Welcome to Your New House!</h1>
+      <p class="text-gray-300 mb-6">You have been randomly assigned to your house for the NACOS Sports Week.</p>
+      {% endif %}
+
+      <!-- House Card -->
+      <div class="{{ house_info.color_class }} rounded-xl p-6 mb-6 transform hover:scale-105 transition duration-300 shadow-2xl">
+        <h2 class="text-4xl font-bold mb-2">{{ house_info.name }}</h2>
+        <p class="text-lg opacity-90 mb-4">{{ house_info.description }}</p>
+      </div>
+
+      <!-- Student Details -->
+      <div class="bg-black/30 rounded-lg p-6 mb-6 border border-red-800/30">
+        <h3 class="text-xl font-semibold text-accent mb-4 flex items-center justify-center">
+          <i class="fas fa-user-circle mr-2"></i> Your Details
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+          <div class="bg-black/20 p-4 rounded-lg">
+            <p class="text-gray-400 text-sm">Full Name</p>
+            <p class="text-white font-semibold text-lg">{{ student.name }}</p>
+          </div>
+          <div class="bg-black/20 p-4 rounded-lg">
+            <p class="text-gray-400 text-sm">
+              {% if student.matric_number and student.matric_number|slice:":3" == "RND" %} Random ID {% else %} Matric Number {% endif %}
+            </p>
+            <p class="text-white font-semibold text-lg">{{ student.matric_number }}</p>
+          </div>
+          <div class="bg-black/20 p-4 rounded-lg">
+            <p class="text-gray-400 text-sm">Level</p>
+            <p class="text-white font-semibold text-lg">{{ student.level }}</p>
+          </div>
+          <div class="bg-black/20 p-4 rounded-lg">
+            <p class="text-gray-400 text-sm">Department</p>
+            <p class="text-white font-semibold text-lg">{{ student.department }}</p>
+          </div>
+        </div>
+
+        <!-- Login Credentials Info -->
+        <div class="mt-4 p-4 bg-accent/10 rounded-lg border border-accent/30">
+          <h4 class="text-accent font-semibold mb-2 flex items-center justify-center">
+            <i class="fas fa-key mr-2"></i> Login Information
+          </h4>
+          <p class="text-gray-300 text-sm">
+            Use your <span class="font-mono text-accent">{{ student.matric_number }}</span> as both username and password to login
+          </p>
+        </div>
+      </div>
+
+      <!-- WhatsApp Link + Auto Redirect -->
+<div class="mb-6">
+  {% if house_info.whatsapp_link and house_info.whatsapp_link != "#" %}
+  <div id="redirect-panel" class="flex flex-col items-center gap-4">
+    <!-- Primary button: open WhatsApp link directly -->
+    <a id="join-btn" href="{{ house_info.whatsapp_link }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-bold rounded-lg text-white bg-green-600 hover:bg-green-700 transition duration-200 transform hover:scale-105 shadow-lg">
+      <i class="fab fa-whatsapp mr-3 text-xl"></i>
+      Join {{ house_info.name }} WhatsApp Group
+    </a>
+
+    <!-- Secondary options + countdown -->
+    <div class="flex items-center space-x-3 mt-2">
+      <button id="copy-link" type="button"
+              data-whatsapp-link="{{ house_info.whatsapp_link }}"
+              class="px-4 py-2 border border-gray-600 rounded text-sm text-gray-300 hover:text-white">
+        <i class="fas fa-link mr-2"></i>Copy Invite Link
+      </button>
+
+      <button id="open-same-tab" type="button"
+              class="px-4 py-2 border border-gray-600 rounded text-sm text-gray-300 hover:text-white">
+        Go now (same tab)
+      </button>
+
+      <button id="cancel-redirect" type="button"
+              class="px-4 py-2 border border-red-600 rounded text-sm text-red-300 hover:text-white">
+        Cancel Redirect
+      </button>
+    </div>
+
+    <p id="redirect-msg" class="text-gray-400 text-sm mt-3">
+      You will be redirected to the WhatsApp group in <span id="countdown">3</span> seconds.
+      (Opens in a new tab — this page will remain open.)
+    </p>
+  </div>
+  {% else %}
+  <div class="bg-yellow-900/30 p-4 rounded-lg border border-yellow-600/30">
+    <p class="text-yellow-200 flex items-center justify-center">
+      <i class="fas fa-exclamation-triangle mr-2"></i>
+      WhatsApp group link coming soon for {{ house_info.name }}
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+
+      <!-- Next Steps & Action Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="{% url 'core:login' %}"
+           class="inline-flex items-center justify-center px-6 py-3 border border-accent text-base font-medium rounded-lg text-accent bg-transparent hover:bg-accent hover:text-black transition duration-200 transform hover:scale-105">
+          <i class="fas fa-sign-in-alt mr-2"></i> Login to Your Account
+        </a>
+        <a href="{% url 'core:randomization' %}"
+           class="inline-flex items-center justify-center px-6 py-3 border border-gray-600 text-base font-medium rounded-lg text-gray-300 hover:text-white hover:border-gray-400 transition duration-200">
+          <i class="fas fa-home mr-2"></i> Back to Randomization
+        </a>
+      </div>
+
+      <!-- Important Notice -->
+      <div class="mt-6 p-4 bg-yellow-900/20 rounded-lg border border-yellow-600/30">
+        <h4 class="text-yellow-300 font-semibold mb-2 flex items-center justify-center">
+          <i class="fas fa-exclamation-triangle mr-2"></i> Important Notice
+        </h4>
+        <p class="text-yellow-200 text-sm">
+          Your house assignment is <strong>permanent and cannot be changed</strong>. Embrace your house with pride and represent them well in all competitions!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+  .hover\\:scale-105:hover { transform: scale(1.05); }
+  .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Elements
+  const copyBtn = document.getElementById('copy-link');
+  const openSameBtn = document.getElementById('open-same-tab');
+  const cancelBtn = document.getElementById('cancel-redirect');
+  const joinBtn = document.getElementById('join-btn');
+  const countdownEl = document.getElementById('countdown');
+  const redirectPanel = document.getElementById('redirect-panel');
+
+  // If no join button, nothing to auto-redirect
+  if (!joinBtn) return;
+
+  // Use the direct WhatsApp link from the button's href
+  const redirectUrl = joinBtn.href;
+  const realInvite = copyBtn ? copyBtn.dataset.whatsappLink : null;
+
+  // Copy invite link handler (for mobile users)
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      const link = this.dataset.whatsappLink;
+      if (!link) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+          const original = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+          setTimeout(() => this.innerHTML = original, 2000);
+        }).catch(() => fallbackCopy(link, this));
+      } else {
+        fallbackCopy(link, this);
+      }
+    });
+  }
+
+  function fallbackCopy(text, button) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; 
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { 
+      document.execCommand('copy'); 
+      const orig = button.innerHTML; 
+      button.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!'; 
+      setTimeout(() => button.innerHTML = orig, 2000); 
+    }
+    catch (e) { 
+      alert('Could not copy link. Please copy manually: ' + text); 
+    }
+    finally { 
+      ta.remove(); 
+    }
+  }
+
+  // Open in same tab immediately
+  if (openSameBtn) {
+    openSameBtn.addEventListener('click', function () {
+      window.location.href = redirectUrl;
+    });
+  }
+
+  // Cancel redirect
+  let cancelled = false;
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function () {
+      cancelled = true;
+      if (countdownEl) countdownEl.textContent = 'Cancelled';
+      if (redirectPanel) {
+        const warn = document.createElement('div');
+        warn.className = 'mt-2 text-sm text-yellow-300';
+        warn.textContent = 'Redirect cancelled. Click "Join" when you are ready.';
+        redirectPanel.appendChild(warn);
+      }
+    });
+  }
+
+  // Auto redirect countdown (only for new assignments)
+  {% if not existing %}
+  (function startCountdown() {
+    let seconds = 3;
+    if (countdownEl) countdownEl.textContent = seconds;
+    const tick = setInterval(() => {
+      if (cancelled) { clearInterval(tick); return; }
+      seconds = seconds - 1;
+      if (countdownEl) countdownEl.textContent = Math.max(0, seconds);
+      if (seconds <= 0) {
+        clearInterval(tick);
+        // Open in new tab so the result page stays open for screenshot/copy
+        try {
+          window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+        } catch (e) {
+          // Fallback to same-tab if popup blocked
+          window.location.href = redirectUrl;
+        }
+      }
+    }, 1000);
+  })();
+  {% endif %}
+});
+</script>
+
+{% endblock %}

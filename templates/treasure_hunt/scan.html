@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{% url 'treasure_hunt:home' %}" 
+           class="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Treasure Hunt</span>
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-accent mb-2">Scan QR Code</h1>
+        <p class="text-gray-400">Point your camera at a QR code to scan and earn points</p>
+    </div>
+
+    <!-- Scanner Interface -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm mb-8">
+        <!-- Camera Controls -->
+        <div class="text-center mb-6">
+            <button id="start-camera" 
+                    class="px-6 py-3 bg-accent text-black font-semibold rounded-lg hover:bg-orange-500 transition flex items-center space-x-2 mx-auto">
+                <i class="fas fa-camera"></i>
+                <span>Start Camera</span>
+            </button>
+            <button id="stop-camera" 
+                    class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition flex items-center space-x-2 mx-auto mt-4 hidden">
+                <i class="fas fa-stop"></i>
+                <span>Stop Camera</span>
+            </button>
+        </div>
+
+        <!-- Scanner Preview -->
+        <div id="qr-scanner" class="max-w-md mx-auto mb-6 hidden">
+            <div class="relative">
+                <video id="preview" class="w-full h-64 bg-black rounded-lg border-2 border-accent"></video>
+                <div class="absolute inset-0 border-2 border-white rounded-lg m-2 pointer-events-none"></div>
+                <div class="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-qrcode mr-2"></i>Scanner Active
+                </div>
+            </div>
+            <p class="text-center text-gray-400 text-sm mt-2">Point camera at QR code</p>
+        </div>
+
+        <!-- Manual Input -->
+        <div class="max-w-md mx-auto">
+            <div class="text-center mb-4">
+                <p class="text-gray-400 mb-2">Or enter QR code manually:</p>
+                <div class="flex space-x-2">
+                    <input type="text" 
+                           id="manual-qr-input" 
+                           placeholder="Enter QR code here..." 
+                           class="flex-1 px-4 py-3 bg-black/30 border border-red-800/50 rounded-lg text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent">
+                    <button id="manual-submit" 
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Results -->
+        <div id="scan-results" class="hidden mt-6 p-6 bg-black/50 rounded-lg border-2 border-green-500/50">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-white text-2xl"></i>
+                </div>
+                <h3 id="result-title" class="text-2xl font-bold text-green-400 mb-2"></h3>
+                <p id="result-message" class="text-gray-300 mb-4"></p>
+                <div id="result-details" class="space-y-2 text-left max-w-md mx-auto">
+                    <div id="result-location" class="flex items-center justify-between">
+                        <span class="text-gray-400">Location:</span>
+                        <span id="location-value" class="text-white font-semibold"></span>
+                    </div>
+                    <div id="result-points" class="flex items-center justify-between">
+                        <span class="text-gray-400">Points Earned:</span>
+                        <span id="points-value" class="text-accent font-bold text-lg"></span>
+                    </div>
+                    <div id="result-total" class="flex items-center justify-between">
+                        <span class="text-gray-400">Total Points:</span>
+                        <span id="total-value" class="text-accent font-bold text-lg"></span>
+                    </div>
+                </div>
+                <div id="result-clue" class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Next Clue:</h4>
+                    <p id="clue-text" class="text-yellow-300"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Results -->
+        <div id="error-results" class="hidden mt-6 p-6 bg-black/50 rounded-lg border-2 border-red-500/50">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-times text-white text-2xl"></i>
+                </div>
+                <h3 id="error-title" class="text-2xl font-bold text-red-400 mb-2"></h3>
+                <p id="error-message" class="text-gray-300 mb-4"></p>
+                <div id="error-clue" class="hidden mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <h4 class="font-semibold text-blue-400 mb-2">Clue:</h4>
+                    <p id="clue-error-text" class="text-blue-300"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanning Tips -->
+    <div class="bg-gradient-to-br from-red-900/30 to-black/30 rounded-2xl p-8 border border-red-800/50 backdrop-blur-sm">
+        <h2 class="text-2xl font-bold text-accent mb-6">Scanning Tips</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-green-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fas fa-lightbulb text-green-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Good Lighting</h3>
+                        <p class="text-gray-400 text-sm">Ensure the QR code is well-lit for better scanning</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fas fa-camera text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Steady Hands</h3>
+                        <p class="text-gray-400 text-sm">Hold your device steady while scanning</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-purple-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fas fa-qrcode text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Clear View</h3>
+                        <p class="text-gray-400 text-sm">Make sure the entire QR code is visible in frame</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-yellow-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <i class="fas fa-redo text-yellow-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Try Again</h3>
+                        <p class="text-gray-400 text-sm">If scanning fails, try from a different angle</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instascan Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<style>
+    /* Scanner styling */
+    #preview {
+        transform: scaleX(-1); /* Mirror the camera feed */
+    }
+    
+    /* Pulse animation for scanner */
+    @keyframes scanner-pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .scanner-active {
+        animation: scanner-pulse 2s infinite;
+    }
+    
+    /* Custom input styling */
+    input {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(139, 0, 0, 0.5) !important;
+        color: white !important;
+    }
+    
+    input:focus {
+        border-color: #FF6B35 !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+        outline: none !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let scanner = null;
+        const cameraButton = document.getElementById('start-camera');
+        const stopButton = document.getElementById('stop-camera');
+        const scannerDiv = document.getElementById('qr-scanner');
+        const preview = document.getElementById('preview');
+        const resultsDiv = document.getElementById('scan-results');
+        const errorDiv = document.getElementById('error-results');
+        const manualInput = document.getElementById('manual-qr-input');
+        const manualSubmit = document.getElementById('manual-submit');
+        
+        // Camera control functions
+        cameraButton.addEventListener('click', async function() {
+            try {
+                scanner = new Instascan.Scanner({ 
+                    video: preview,
+                    mirror: false,
+                    backgroundScan: false,
+                    refractoryPeriod: 1000,
+                    scanPeriod: 1
+                });
+                
+                scanner.addListener('scan', function(content) {
+                    processQRCode(content);
+                });
+                
+                const cameras = await Instascan.Camera.getCameras();
+                if (cameras.length > 0) {
+                    // Prefer back camera if available
+                    let selectedCamera = cameras[0];
+                    for (let camera of cameras) {
+                        if (camera.name.toLowerCase().includes('back')) {
+                            selectedCamera = camera;
+                            break;
+                        }
+                    }
+                    
+                    await scanner.start(selectedCamera);
+                    scannerDiv.classList.remove('hidden');
+                    cameraButton.classList.add('hidden');
+                    stopButton.classList.remove('hidden');
+                    preview.classList.add('scanner-active');
+                    
+                    // Show camera success message
+                    showToast('Camera started successfully!', 'success');
+                } else {
+                    showToast('No cameras found on this device.', 'error');
+                }
+            } catch (error) {
+                console.error('Camera error:', error);
+                showToast('Error accessing camera: ' + error.message, 'error');
+            }
+        });
+        
+        stopButton.addEventListener('click', function() {
+            if (scanner) {
+                scanner.stop();
+                scannerDiv.classList.add('hidden');
+                cameraButton.classList.remove('hidden');
+                stopButton.classList.add('hidden');
+                preview.classList.remove('scanner-active');
+            }
+        });
+        
+        // Manual submission
+        manualSubmit.addEventListener('click', function() {
+            const code = manualInput.value.trim();
+            if (code) {
+                processQRCode(code);
+                manualInput.value = '';
+            } else {
+                showToast('Please enter a QR code', 'error');
+            }
+        });
+        
+        // Enter key for manual input
+        manualInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                manualSubmit.click();
+            }
+        });
+        
+        // Process QR code function
+        async function processQRCode(code) {
+            try {
+                // Show loading state
+                showToast('Processing QR code...', 'info');
+                
+                const response = await fetch('{% url "treasure_hunt:scan" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ qr_code: code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success results
+                    showSuccessResults(data);
+                    showToast('QR code scanned successfully!', 'success');
+                    
+                    // Stop camera after successful scan
+                    if (scanner) {
+                        scanner.stop();
+                        scannerDiv.classList.add('hidden');
+                        cameraButton.classList.remove('hidden');
+                        stopButton.classList.add('hidden');
+                    }
+                    
+                    // Auto-refresh after 5 seconds
+                    setTimeout(() => {
+                        window.location.href = '{% url "treasure_hunt:home" %}';
+                    }, 5000);
+                    
+                } else {
+                    // Show error results
+                    showErrorResults(data);
+                    showToast(data.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Scan error:', error);
+                showToast('Error processing QR code', 'error');
+            }
+        }
+        
+        function showSuccessResults(data) {
+            resultsDiv.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            
+            document.getElementById('result-title').textContent = 'Success!';
+            document.getElementById('result-message').textContent = data.message;
+            document.getElementById('location-value').textContent = data.location;
+            document.getElementById('points-value').textContent = `+${data.points}`;
+            document.getElementById('total-value').textContent = data.total_points;
+            document.getElementById('clue-text').textContent = data.clue;
+        }
+        
+        function showErrorResults(data) {
+            errorDiv.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            
+            document.getElementById('error-title').textContent = 'Oops!';
+            document.getElementById('error-message').textContent = data.message;
+            
+            if (data.clue) {
+                document.getElementById('error-clue').classList.remove('hidden');
+                document.getElementById('clue-error-text').textContent = data.clue;
+            } else {
+                document.getElementById('error-clue').classList.add('hidden');
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg font-semibold animate-pulse ${
+                type === 'success' ? 'bg-green-600 text-white' :
+                type === 'error' ? 'bg-red-600 text-white' :
+                'bg-blue-600 text-white'
+            }`;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info'} mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Request camera permission on page load
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    console.log('Camera permission granted');
+                    // We don't start the camera automatically, but we know permission is available
+                })
+                .catch(function(error) {
+                    console.log('Camera permission denied:', error);
+                    showToast('Camera permission is required for scanning', 'error');
+                });
+        }
+    });
+</script>
+{% endblock %}

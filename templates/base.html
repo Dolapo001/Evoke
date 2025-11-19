@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evoke - NACOS Sports Week</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% url 'manifest' %}">
+    <meta name="theme-color" content="#2B0000">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2B0000',
+                        secondary: '#0C0000',
+                        accent: '#FF6B35',
+                    },
+                    backgroundImage: {
+                        'gradient-primary': 'linear-gradient(180deg, #2B0000 0%, #0C0000 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-primary min-h-screen text-white">
+    <!-- Navigation -->
+<nav class="bg-black/50 backdrop-blur-lg border-b border-red-800/50">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-accent">EVOKE</h1>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'home' %}" class="hover:text-accent transition">Home</a>
+
+                {% if user.is_authenticated %}
+                    <!-- Only show "My House" if user is not an admin -->
+                    {% if user.role != 'admin' %}
+                        <a href="{% url 'houses:dashboard' %}" class="hover:text-accent transition">My House</a>
+                    {% endif %}
+                    
+                    <a href="{% url 'events:leaderboard' %}" class="hover:text-accent transition">Leaderboard</a>
+                    <a href="{% url 'gallery:home' %}" class="hover:text-accent transition">Gallery</a>
+
+                    {% if user.role == 'admin' %}
+                        <a href="{% url 'admin_dashboard:dashboard' %}" class="bg-accent text-black px-4 py-2 rounded-lg font-bold hover:bg-orange-500 transition">Admin</a>
+                    {% endif %}
+
+                    <a href="{% url 'core:logout' %}" class="text-red-400 hover:text-red-300 transition">Logout</a>
+                {% else %}
+                    <a href="{% url 'core:login' %}" class="hover:text-accent transition">Login</a>
+                    <a href="{% url 'core:randomization' %}" class="bg-accent text-black px-4 py-2 rounded-lg font-bold hover:bg-orange-500 transition">Get House</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/serviceworker.js')
+                .then(function(registration) {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+    </script>
+</body>
+</html>
