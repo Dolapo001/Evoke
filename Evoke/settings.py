@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-fwt@#vlcw6r3rmd2kpx%y-&3&w&)220!xn877@6s)i!l!^x1$(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://evoke-seven.vercel.app/']
+ALLOWED_HOSTS = ['evoke-seven.vercel.app']
 
 
 # Application definition
